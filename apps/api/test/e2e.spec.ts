@@ -16,6 +16,7 @@ process.env.NODE_ENV = 'test';
 process.env.NOTIFY_PRIORITY_WINDOW_SECONDS = '0';
 process.env.RATE_LIMIT_PER_MIN = '100000';
 process.env.PARTNER_KEYS = 'acme-ai:secret-key';
+process.env.GOOGLE_MAPS_API_KEY = 'test-google-key';
 
 import { AppModule } from '../src/app.module';
 import { configureApp } from '../src/main';
@@ -257,5 +258,65 @@ describe('Admin and settings', () => {
     expect(pre.body.covers).toBeGreaterThan(0);
     const stats = await http().get('/v1/admin/stats').set(auth(admin)).expect(200);
     expect(stats.body.restaurants.total).toBe(5);
+  });
+});
+
+describe('Google listing: live rating, reviews and photos', () => {
+  const PLACE = 'ChIJTestPlaceId1234567890';
+  const calls: { url: string; headers: any }[] = [];
+  beforeAll(() => {
+    jest.spyOn(global, 'fetch').mockImplementation(async (input: any, init?: any) => {
+      const url = String(input);
+      calls.push({ url, headers: init?.headers ?? {} });
+      const json = (b: unknown) => new Response(JSON.stringify(b), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      if (url.endsWith('places:searchText')) return json({ places: [{ id: PLACE, displayName: { text: 'Osteria Lume' }, formattedAddress: '212 Court St, Brooklyn', rating: 4.6, userRatingCount: 812, googleMapsUri: 'https://maps.google.com/?cid=1' }] });
+      if (url.includes(`/places/${PLACE}?`)) return json({
+        id: PLACE, rating: 4.6, userRatingCount: 812, googleMapsUri: 'https://maps.google.com/?cid=1',
+        reviews: [{ rating: 5, relativePublishTimeDescription: '2 weeks ago', publishTime: '2026-11-01T19:00:00Z',
+          text: { text: 'Great pasta', languageCode: 'en' }, originalText: { text: 'Pasta excelente', languageCode: 'es' },
+          authorAttribution: { displayName: 'Ana P.', uri: 'https://maps.google.com/contrib/1', photoUri: 'https://lh3.googleusercontent.com/a' },
+          googleMapsUri: 'https://maps.google.com/review/1', flagContentUri: 'https://maps.google.com/flag/1' }],
+        photos: [{ name: `places/${PLACE}/photos/AbCdEf123`, widthPx: 4000, heightPx: 3000, authorAttributions: [{ displayName: 'Owner', uri: 'https://maps.google.com/contrib/2' }] }],
+      });
+      if (url.includes('/photos/AbCdEf123/media')) return json({ name: 'x', photoUri: 'https://lh3.googleusercontent.com/places/photo123' });
+      return new Response('not found', { status: 404 });
+    });
+  });
+  afterAll(() => jest.restoreAllMocks());
+
+  it('is disabled until a manager links the listing; then serves live content with attribution', async () => {
+    const rid = ids['osteria-lume'];
+    expect((await http().get('/v1/discovery/restaurants/osteria-lume/google').expect(200)).body).toEqual({ enabled: false });
+    const host = await login('host+osteria-lume@tabledash.dev');
+    await http().get(`/v1/manage/${rid}/settings/google/search`).set(auth(host)).expect(403); // managers only
+    const owner = await login('owner+osteria-lume@tabledash.dev');
+    const found = await http().get(`/v1/manage/${rid}/settings/google/search`).query({ q: 'Osteria Lume Brooklyn' }).set(auth(owner)).expect(200);
+    expect(found.body.results[0].placeId).toBe(PLACE);
+    await http().put(`/v1/manage/${rid}/settings/google`).set(auth(owner)).send({ placeId: PLACE }).expect(200);
+
+    const g = (await http().get('/v1/discovery/restaurants/osteria-lume/google').expect(200)).body;
+    expect(g).toMatchObject({ enabled: true, rating: 4.6, userRatingCount: 812, googleMapsUri: 'https://maps.google.com/?cid=1' });
+    expect(g.reviews[0]).toMatchObject({ rating: 5, text: 'Great pasta', originalText: 'Pasta excelente', translated: true, relativeTime: '2 weeks ago',
+      author: { name: 'Ana P.', uri: 'https://maps.google.com/contrib/1' }, googleMapsUri: 'https://maps.google.com/review/1' });
+    expect(g.photos[0]).toMatchObject({ name: `places/${PLACE}/photos/AbCdEf123`, authors: [{ name: 'Owner' }] });
+    // Only the place ID is stored — no Google content in our database.
+    const row = (await pool.query('select google_place_id, photos, rating_avg from restaurants where id = $1', [rid])).rows[0];
+    expect(row.google_place_id).toBe(PLACE);
+    expect(row.photos.join(' ')).not.toContain('googleusercontent');
+    // API key goes in a header to Google, never to the client.
+    expect(calls.every((c) => c.headers['X-Goog-Api-Key'] === 'test-google-key')).toBe(true);
+    expect(JSON.stringify(g)).not.toContain('test-google-key');
+  });
+
+  it('photo endpoint redirects to a short-lived Google URL and rejects bad names', async () => {
+    const res = await http().get('/v1/discovery/google-photo').query({ name: `places/${PLACE}/photos/AbCdEf123`, w: 800 }).expect(302);
+    expect(res.headers.location).toBe('https://lh3.googleusercontent.com/places/photo123');
+    await http().get('/v1/discovery/google-photo').query({ name: '../../evil' }).expect(400);
+  });
+
+  it('unlinking turns Google content off', async () => {
+    const owner = await login('owner+osteria-lume@tabledash.dev');
+    await http().put(`/v1/manage/${ids['osteria-lume']}/settings/google`).set(auth(owner)).send({ placeId: null }).expect(200);
+    expect((await http().get('/v1/discovery/restaurants/osteria-lume/google').expect(200)).body.enabled).toBe(false);
   });
 });

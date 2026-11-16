@@ -7,6 +7,7 @@ import { C, s } from '../lib/theme';
 import { Button, Chip, ChipRow, Loading, SlotButton } from '../components/ui';
 import { PartyDateTime, PDT } from '../components/PartyDateTime';
 import type { RootStack } from '../../App';
+import { GListing, GoogleRatingLine, GoogleReviews, PhotoGallery } from '../components/GoogleContent';
 
 const AREA: Record<string, string> = { DINING_ROOM: 'Dining room', BAR: 'Bar', PATIO: 'Patio', COUNTER: 'Counter' };
 const PERIODS = [['All day', '00:00', '23:59'], ['Brunch', '10:00', '15:00'], ['Early', '16:00', '18:29'], ['Prime', '18:30', '20:29'], ['Late', '20:30', '23:59']] as const;
@@ -14,6 +15,7 @@ const PERIODS = [['All day', '00:00', '23:59'], ['Brunch', '10:00', '15:00'], ['
 export default function RestaurantScreen({ route, navigation }: NativeStackScreenProps<RootStack, 'Restaurant'>) {
   const { user } = useAuth();
   const [r, setR] = useState<any>(null);
+  const [google, setGoogle] = useState<GListing | null>(null);
   const [pdt, setPdt] = useState<PDT>({ party: route.params.party ?? 2, date: route.params.date, time: route.params.time ?? '19:00' });
   const [area, setArea] = useState<string | null>(null);
   const [period, setPeriod] = useState(0);
@@ -23,6 +25,8 @@ export default function RestaurantScreen({ route, navigation }: NativeStackScree
   const [editing, setEditing] = useState(false);
 
   useEffect(() => { api(`/discovery/restaurants/${route.params.slug}`).then((x) => { setR(x); navigation.setOptions({ title: x.name }); }); }, [route.params.slug, navigation]);
+  // Live Google rating, reviews and photos (only shown when the restaurant has linked its Google listing).
+  useEffect(() => { api(`/discovery/restaurants/${route.params.slug}/google`).then(setGoogle).catch(() => setGoogle(null)); }, [route.params.slug]);
 
   const loadSlots = useCallback(async () => {
     if (!r) return;
@@ -69,15 +73,14 @@ export default function RestaurantScreen({ route, navigation }: NativeStackScree
 
   return (
     <ScrollView style={s.screen} contentContainerStyle={{ paddingBottom: 40 }}>
-      <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false}>
-        {r.photos.map((p: string) => <Image key={p} source={{ uri: p }} style={{ width: 400, height: 220, backgroundColor: C.line }} />)}
-      </ScrollView>
+      <PhotoGallery own={r.photos} google={google} />
       <View style={[s.pad, { gap: 6 }]}>
         <View style={[s.row, { justifyContent: 'space-between' }]}>
           <Text style={s.h1}>{r.name}</Text>
           <Pressable onPress={toggleSave}><Text style={{ fontSize: 22 }}>{saved ? '♥' : '♡'}</Text></Pressable>
         </View>
-        <Text style={s.muted}>★ {r.ratingAvg.toFixed(1)} ({r.ratingCount} reviews) · {r.cuisine} · {price(r.priceBand)} · {r.neighborhood}</Text>
+        <Text style={s.muted}>★ {r.ratingAvg.toFixed(1)} ({r.ratingCount} TableDash reviews) · {r.cuisine} · {price(r.priceBand)} · {r.neighborhood}</Text>
+        {google?.enabled && <GoogleRatingLine g={google} />}
         <Text style={[s.body, { marginTop: 6 }]}>{r.description}</Text>
 
         <View style={[s.card, { marginTop: 14 }]}>
@@ -130,7 +133,8 @@ export default function RestaurantScreen({ route, navigation }: NativeStackScree
           {r.menuUrl && <Pressable onPress={() => Linking.openURL(r.menuUrl)}><Text style={{ color: C.brand }}>View menu</Text></Pressable>}
           {r.features.length > 0 && <Text style={s.muted}>{r.features.join(' · ')}</Text>}
         </View>
-        <Text style={[s.h2, { marginTop: 16 }]}>Reviews from verified diners</Text>
+        {google?.enabled && <GoogleReviews g={google} />}
+        <Text style={[s.h2, { marginTop: 16 }]}>Reviews from verified TableDash diners</Text>
         {r.reviews.length === 0 && <Text style={s.muted}>No reviews yet.</Text>}
         {r.reviews.map((rv: any) => (
           <View key={rv.id} style={[s.card, { marginBottom: 8 }]}>

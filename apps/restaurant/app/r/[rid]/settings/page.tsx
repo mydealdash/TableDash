@@ -4,7 +4,7 @@ import { api, money } from '@/lib/api';
 import { useRestaurant } from '../context';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const TABS = ['Profile', 'Shifts & pacing', 'Floor plan', 'Turn times', 'Policies', 'Closures', 'Staff'] as const;
+const TABS = ['Profile', 'Google listing', 'Shifts & pacing', 'Floor plan', 'Turn times', 'Policies', 'Closures', 'Staff'] as const;
 
 export default function Settings() {
   const { rid, refreshMeta } = useRestaurant();
@@ -24,6 +24,7 @@ export default function Settings() {
       <div className="spread"><h1>Settings</h1>{msg && <span className={msg.startsWith('⚠') ? 'err' : 'ok'}>{msg}</span>}</div>
       <div className="tabs">{TABS.map((t) => <button key={t} className={tab === t ? 'on' : ''} onClick={() => setTab(t)}>{t}</button>)}</div>
       {tab === 'Profile' && <Profile r={s.restaurant} onSave={(body) => save(() => api(`/manage/${rid}/settings/profile`, { method: 'PATCH', body }))} />}
+      {tab === 'Google listing' && <GoogleListing rid={rid} name={s.restaurant.name} save={save} />}
       {tab === 'Shifts & pacing' && <Shifts rid={rid} shifts={s.shifts} save={save} />}
       {tab === 'Floor plan' && <Floor rid={rid} rooms={s.rooms} tables={s.tables} save={save} />}
       {tab === 'Turn times' && <Turns rid={rid} rows={s.turnTimes} save={save} />}
@@ -270,6 +271,48 @@ function Staff({ rid, save }: { rid: string; save: any }) {
           <label>Temporary password<input value={f.tempPassword} onChange={(e) => setF({ ...f, tempPassword: e.target.value })} /></label>
         </div>
         <button className="btn primary" onClick={() => save(() => api(`/manage/${rid}/settings/staff`, { body: { ...f, tempPassword: f.tempPassword || undefined } }), 'Staff added').then(load)}>Add</button>
+      </div>
+    </div>
+  );
+}
+
+/** Link the restaurant to its Google listing so diners see live Google rating, reviews and photos. */
+function GoogleListing({ rid, name, save }: { rid: string; name: string; save: any }) {
+  const [cur, setCur] = useState<any>(null);
+  const [q, setQ] = useState(name);
+  const [results, setResults] = useState<any[] | null>(null);
+  const [err, setErr] = useState('');
+  const load = () => api(`/manage/${rid}/settings/google`).then(setCur).catch((e) => setErr(e.message));
+  useEffect(() => { load(); }, [rid]);
+  if (!cur) return <div className="muted">{err || 'Loading…'}</div>;
+  if (!cur.configured) return <div className="card">Google integration isn't switched on for this platform yet. An administrator needs to set <code>GOOGLE_MAPS_API_KEY</code> on the API.</div>;
+  return (
+    <div className="grid2">
+      <div className="card form">
+        <h2>Linked listing</h2>
+        {cur.placeId ? <>
+          {cur.listing ? <p>★ {cur.listing.rating ?? '—'} from {cur.listing.userRatingCount ?? 0} Google reviews · {cur.listing.photos} photos shown in the diner app</p> : <p className="muted">Linked, but Google returned no details right now.</p>}
+          <div className="row">
+            {cur.listing?.googleMapsUri && <a className="btn" href={cur.listing.googleMapsUri} target="_blank" rel="noreferrer">Open in Google Maps</a>}
+            <button className="btn danger" onClick={() => save(() => api(`/manage/${rid}/settings/google`, { method: 'PUT', body: { placeId: null } }), 'Unlinked').then(load)}>Unlink</button>
+          </div>
+        </> : <p className="muted">Not linked. Search for your restaurant on Google and pick the right result.</p>}
+        <p className="small muted">Diners see your Google rating, up to 5 Google reviews and your Google photos, loaded live from Google with the attribution Google requires. TableDash stores only the Google place ID.</p>
+      </div>
+      <div className="card form">
+        <h2>Find on Google</h2>
+        <div className="row"><input style={{ flex: 1 }} value={q} onChange={(e) => setQ(e.target.value)} />
+          <button className="btn primary" onClick={async () => { setErr(''); try { setResults((await api(`/manage/${rid}/settings/google/search?q=${encodeURIComponent(q)}`)).results); } catch (e: any) { setErr(e.message); } }}>Search</button></div>
+        {err && <div className="err">{err}</div>}
+        {results?.length === 0 && <p className="muted">No matches. Try adding the street or neighborhood.</p>}
+        {results?.map((r) => (
+          <div key={r.placeId} className="spread" style={{ borderTop: '1px solid var(--line)', paddingTop: 8 }}>
+            <div><b>{r.name}</b><div className="small muted">{r.address}{r.rating ? ` · ★ ${r.rating} (${r.userRatingCount})` : ''}</div></div>
+            <button className="btn sm" disabled={cur.placeId === r.placeId} onClick={() => save(() => api(`/manage/${rid}/settings/google`, { method: 'PUT', body: { placeId: r.placeId } }), 'Google listing linked').then(() => { setResults(null); load(); })}>
+              {cur.placeId === r.placeId ? 'Linked' : 'This is us'}</button>
+          </div>
+        ))}
+        <p className="small muted">Places data © Google · <span translate="no">Google Maps</span></p>
       </div>
     </div>
   );

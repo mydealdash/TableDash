@@ -88,6 +88,8 @@ export const restaurants = pgTable('restaurants', {
   phone: text('phone'),
   photos: text('photos').array().notNull().default([]),
   menuUrl: text('menu_url'),
+  // Google Places link (only the place ID may be stored under Google's terms).
+  googlePlaceId: text('google_place_id'),
   features: text('features').array().notNull().default([]),
   status: restaurantStatus('status').notNull().default('ONBOARDING'),
   plan: text('plan').notNull().default('CORE'),

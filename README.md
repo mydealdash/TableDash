@@ -35,6 +35,22 @@ eas build --profile preview --platform ios       # needs an Apple Developer acco
 ```
 `eas submit` uploads production builds to the App Store and Google Play.
 
+## Google reviews and photos (optional)
+
+Restaurants can link their Google listing. The diner app then shows the Google rating, up to 5 Google reviews and the Google photos alongside TableDash's own reviews.
+
+1. In [Google Cloud Console](https://console.cloud.google.com/), create a project, enable billing, and enable **Places API (New)**.
+2. Create an API key. Restrict it to **Places API (New)**. It's used only by the API server and never sent to apps.
+3. Set `GOOGLE_MAPS_API_KEY` on the API (on Render: **tabledash-api → Environment**), then redeploy the API.
+4. Link each restaurant: **web back office → Settings → Google listing**, or **restaurant app → Settings → Google listing**. Search, then tap **This is us**.
+
+How it complies with Google's Places API policies:
+- Only the Google **place ID** is stored. The rating, reviews and photos are fetched live for each view and never saved.
+- The API key stays on the server. Photos go through `GET /v1/discovery/google-photo`, which redirects to a short-lived Google URL.
+- The diner app shows the **"Google Maps"** text attribution in the same container as the content, credits review and photo authors (avatar, name, profile link), links every review and photo to Google Maps, discloses translations with access to the original text, and states how reviews are ordered.
+
+**Cost:** each restaurant page view makes a billable Place Details request (rating and reviews are in Google's higher-priced tier), plus one Place Photo request per Google photo shown. Check Google's current pricing and set a budget alert in Google Cloud.
+
 ## Deploy a test environment (Render, free tier)
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/mydealdash/TableDash)

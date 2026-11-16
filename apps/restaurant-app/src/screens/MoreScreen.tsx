@@ -14,6 +14,11 @@ export default function MoreScreen({ navigation }: any) {
   const [cfg, setCfg] = useState<any>(null);
   const [closure, setClosure] = useState(''); const [reason, setReason] = useState('');
   const [rules, setRules] = useState<any>(null);
+  const [google, setGoogle] = useState<any>(null);
+  const [gq, setGq] = useState(restaurant!.name);
+  const [gResults, setGResults] = useState<any[] | null>(null);
+  const loadGoogle = useCallback(() => { if (can(...MANAGERS)) api(`/manage/${rid}/settings/google`).then(setGoogle).catch(() => {}); }, [rid]);
+  useEffect(() => { loadGoogle(); }, [loadGoogle]);
   const load = useCallback(() => api(`/manage/${rid}/settings`).then((x) => { setCfg(x); setRules({
     bookingWindowDays: x.restaurant.bookingWindowDays, maxPartyOnline: x.restaurant.maxPartyOnline, graceMinutes: x.restaurant.graceMinutes, holdMinutes: x.restaurant.holdMinutes }); }), [rid]);
   useEffect(() => { load(); }, [load]);
@@ -65,6 +70,24 @@ export default function MoreScreen({ navigation }: any) {
           <TextInput style={[s.input, { flex: 1, minWidth: 120 }]} placeholder="Reason" value={reason} onChangeText={setReason} />
           <Btn kind="primary" title="Close date" disabled={!/^\d{4}-\d{2}-\d{2}$/.test(closure)} onPress={() => api(`/manage/${rid}/settings/closures`, { body: { date: closure, reason: reason || undefined } }).then(() => { setClosure(''); setReason(''); load(); })} />
         </View>
+      </View>}
+
+      {google?.configured && can(...MANAGERS) && <View style={s.card}>
+        <Text style={s.h2}>Google listing</Text>
+        <Text style={s.body}>{google.placeId ? (google.listing ? `Linked · ★ ${google.listing.rating ?? '—'} from ${google.listing.userRatingCount ?? 0} reviews · ${google.listing.photos} photos` : 'Linked') : 'Not linked. Diners see your Google rating, reviews and photos once linked.'}</Text>
+        <View style={[s.row, { marginTop: 8 }]}>
+          <TextInput style={[s.input, { flex: 1 }]} value={gq} onChangeText={setGq} placeholder="Restaurant name and street" />
+          <Btn title="Search" onPress={() => api(`/manage/${rid}/settings/google/search?q=${encodeURIComponent(gq)}`).then((x) => setGResults(x.results)).catch((e) => Alert.alert('Search failed', e.message))} />
+        </View>
+        {gResults?.map((g) => (
+          <View key={g.placeId} style={[s.row, { justifyContent: 'space-between', marginTop: 8 }]}>
+            <View style={{ flex: 1 }}><Text style={{ fontWeight: '700' }}>{g.name}</Text><Text style={s.muted}>{g.address}{g.rating ? ` · ★ ${g.rating}` : ''}</Text></View>
+            <Btn small kind={google.placeId === g.placeId ? 'ghost' : 'primary'} title={google.placeId === g.placeId ? 'Linked' : 'This is us'}
+              onPress={() => api(`/manage/${rid}/settings/google`, { method: 'PUT', body: { placeId: g.placeId } }).then(() => { setGResults(null); loadGoogle(); })} />
+          </View>
+        ))}
+        {google.placeId && <Btn style={{ marginTop: 8 }} small kind="danger" title="Unlink" onPress={() => api(`/manage/${rid}/settings/google`, { method: 'PUT', body: { placeId: null } }).then(loadGoogle)} />}
+        <Text style={[s.muted, { marginTop: 6, fontSize: 12 }]}>Google Maps</Text>
       </View>}
 
       <View style={[s.row, { flexWrap: 'wrap' }]}>

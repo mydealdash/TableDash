@@ -20,6 +20,7 @@ import { AdminModule } from './admin/admin.module';
 import { RealtimeModule } from './realtime/realtime.module';
 import { JobsModule } from './jobs/jobs.module';
 import { HealthController } from './health.controller';
+import { GoogleModule } from './google/google.module';
 
 @Module({
   imports: [
@@ -29,7 +30,7 @@ import { HealthController } from './health.controller';
     }),
     DbModule, CommonModule, MessagingModule, AuthModule, AvailabilityModule, PaymentsModule, BookingsModule, NotifyModule,
     DiscoveryModule, DinersModule, WaitlistModule, HostModule, SettingsModule, ReportsModule, ReviewsModule, AdminModule,
-    RealtimeModule, JobsModule,
+    RealtimeModule, JobsModule, GoogleModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
