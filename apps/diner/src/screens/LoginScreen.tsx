@@ -6,6 +6,7 @@ import { useAuth } from '../lib/auth';
 import { s } from '../lib/theme';
 import { Button, Chip, ChipRow } from '../components/ui';
 import type { RootStack } from '../../App';
+import { Logo } from '../components/Logo';
 
 /** DIN-01: phone one-time code (default) or email + password. */
 export default function LoginScreen({ route, navigation }: NativeStackScreenProps<RootStack, 'Login'>) {
@@ -24,7 +25,8 @@ export default function LoginScreen({ route, navigation }: NativeStackScreenProp
 
   return (
     <ScrollView style={s.screen} contentContainerStyle={[s.pad, { gap: 6 }]} keyboardShouldPersistTaps="handled">
-      <Text style={s.h1}>Welcome</Text>
+      <Logo size={40} />
+      <Text style={[s.h1, { marginTop: 12 }]}>Welcome</Text>
       {route.params?.reason && <Text style={s.muted}>{route.params.reason}</Text>}
       <ChipRow>
         <Chip label="Phone" on={mode === 'phone'} onPress={() => setMode('phone')} />

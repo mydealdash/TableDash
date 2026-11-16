@@ -20,7 +20,7 @@ export default function ReviewsScreen() {
       renderItem={({ item: r }) => (
         <View style={s.card}>
           <View style={[s.row, { justifyContent: 'space-between' }]}>
-            <Text style={{ fontWeight: '800' }}>{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)} · {r.author}</Text>
+            <Text style={{ fontFamily: 'Nunito_800ExtraBold' }}>{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)} · {r.author}</Text>
             {r.status !== 'PUBLISHED' && <Badge text={r.status} color={C.bad} />}
           </View>
           <Text style={[s.body, { marginTop: 4 }]}>{r.text}</Text>

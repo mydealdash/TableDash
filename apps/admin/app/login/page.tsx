@@ -10,7 +10,7 @@ export default function Login() {
   const [err, setErr] = useState('');
   return (
     <div className="login">
-      <form className="card form" style={{ width: 340 }} onSubmit={async (e) => {
+      <form className="card form" style={{ width: 380, padding: 28, borderRadius: 22 }} onSubmit={async (e) => {
         e.preventDefault(); setErr('');
         try {
           const res = await api('/auth/login', { body: { email, password } });
@@ -18,7 +18,7 @@ export default function Login() {
           setSession(res.token, [], res.user); router.replace('/');
         } catch (e: any) { setErr(e.message); }
       }}>
-        <h1>TableDash Admin</h1>
+        <div className="logo"><img src="/mark.svg" alt="" style={{ width: 44, height: 44 }} /><div style={{ fontSize: 28 }}>Table<span className="dash">Dash</span><small style={{ color: 'var(--muted)', fontSize: 13 }}>Admin console</small></div></div>
         <label>Email<input value={email} onChange={(e) => setEmail(e.target.value)} /></label>
         <label>Password<input type="password" value={password} onChange={(e) => setPassword(e.target.value)} /></label>
         {err && <div className="err">{err}</div>}

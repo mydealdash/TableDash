@@ -36,16 +36,16 @@ export function DeviceFrame({ children, background = '#f4f2ee' }: { children: Re
   const w = Math.min(DEVICE.w, width - 64);
   const h = Math.min(DEVICE.h, height - 64);
   return (
-    <View style={{ flex: 1, minHeight: height, alignItems: 'center', justifyContent: 'center', backgroundColor: '#1f1b18' }}>
+    <View style={{ flex: 1, minHeight: height, alignItems: 'center', justifyContent: 'center', backgroundColor: '#14213D' }}>
       <View style={{ width: w + DEVICE.bezel * 2, height: h + DEVICE.bezel * 2, borderRadius: DEVICE.radius + DEVICE.bezel, backgroundColor: '#0b0b0c', padding: DEVICE.bezel,
-        ...({ boxShadow: '0 30px 80px rgba(0,0,0,.55), 0 0 0 2px #3a3633' } as any) }}>
+        ...({ boxShadow: '0 30px 80px rgba(0,0,0,.55), 0 0 0 2px #2A3858' } as any) }}>
         <View style={{ flex: 1, borderRadius: DEVICE.radius, overflow: 'hidden', backgroundColor: background }}>
           <StatusBarMock />
           <View style={{ flex: 1 }}>{children}</View>
           {KIND === 'phone' && <View style={{ height: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff' }}><View style={{ width: 134, height: 5, borderRadius: 3, backgroundColor: '#111' }} /></View>}
         </View>
       </View>
-      <Text style={{ color: '#a39b90', fontSize: 12, marginTop: 14 }}>{KIND === 'phone' ? 'TableDash diner app · web preview' : 'TableDash for Restaurants · iPad preview'}</Text>
+      <Text style={{ color: '#8D98B3', fontSize: 12, marginTop: 14 }}>{KIND === 'phone' ? 'TableDash diner app · web preview' : 'TableDash for Restaurants · iPad preview'}</Text>
     </View>
   );
 }

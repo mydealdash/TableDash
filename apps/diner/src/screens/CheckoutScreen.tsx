@@ -65,11 +65,11 @@ export default function CheckoutScreen({ route, navigation }: NativeStackScreenP
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView style={s.screen} contentContainerStyle={[s.pad, { gap: 4, paddingBottom: 40 }]}>
         <Text style={s.h1}>{restaurant.name}</Text>
-        <Text style={[s.body, { fontWeight: '700' }]}>{when} · {hold?.partySize ?? request?.partySize} people</Text>
+        <Text style={[s.body, { fontFamily: 'Nunito_700Bold' }]}>{when} · {hold?.partySize ?? request?.partySize} people</Text>
         {hold && <Text style={{ color: left < 60 ? C.bad : C.muted }}>We're holding this table for {Math.floor(left / 60)}:{String(left % 60).padStart(2, '0')}</Text>}
         {!user && (
           <Pressable onPress={() => navigation.navigate('Login', { reason: 'Sign in to earn points and save your card.' })} style={[s.card, { marginTop: 10, backgroundColor: C.brandSoft }]}>
-            <Text style={{ fontWeight: '700' }}>Sign in to earn 100 points for this booking →</Text>
+            <Text style={{ fontFamily: 'Nunito_700Bold' }}>Sign in to earn 100 points for this booking →</Text>
           </Pressable>
         )}
         <Text style={s.label}>Name</Text><TextInput style={s.input} value={name} onChangeText={setName} />
@@ -85,7 +85,7 @@ export default function CheckoutScreen({ route, navigation }: NativeStackScreenP
             <Text style={s.label}>{hold!.payment.kind === 'DEPOSIT' ? `Deposit ${money(hold!.payment.amountCents)}` : 'Card required to hold the table'}</Text>
             {cards.map((c) => <Chip key={c.id} label={`${c.brand} •••• ${c.last4}`} on={cardId === c.id} onPress={() => setCardId(c.id)} />)}
             <Pressable onPress={() => user ? navigation.navigate('AddCard', {}) : navigation.navigate('Login', { reason: 'Sign in to add a card.' })}>
-              <Text style={{ color: C.brand, fontWeight: '700', marginTop: 8 }}>+ Add a card</Text>
+              <Text style={{ color: C.brand, fontFamily: 'Nunito_700Bold', marginTop: 8 }}>+ Add a card</Text>
             </Pressable>
           </View>
         )}
@@ -93,7 +93,7 @@ export default function CheckoutScreen({ route, navigation }: NativeStackScreenP
           <Pressable onPress={() => setAccepted(!accepted)} style={[s.card, { marginTop: 14, flexDirection: 'row', gap: 10 }]}>
             <Text style={{ fontSize: 18 }}>{accepted ? '☑' : '☐'}</Text>
             <View style={{ flex: 1 }}>
-              <Text style={{ fontWeight: '700' }}>Restaurant policy</Text>
+              <Text style={{ fontFamily: 'Nunito_700Bold' }}>Restaurant policy</Text>
               <Text style={s.muted}>{hold.policy.text}</Text>
               <Text style={[s.muted, { marginTop: 4 }]}>Free cancellation until {hold.policy.cancelCutoffHours}h before.</Text>
             </View>

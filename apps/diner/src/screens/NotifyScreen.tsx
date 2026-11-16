@@ -22,7 +22,7 @@ export default function NotifyScreen({ navigation }: any) {
       renderItem={({ item: n }) => (
         <Pressable onPress={() => navigation.navigate('Restaurant', { slug: n.restaurant.slug, date: n.date, party: n.partySize, time: n.fromTime })} style={s.card}>
           <View style={[s.row, { justifyContent: 'space-between' }]}>
-            <Text style={{ fontWeight: '800', fontSize: 16 }}>{n.restaurant.name}</Text>
+            <Text style={{ fontFamily: 'Nunito_800ExtraBold', fontSize: 16 }}>{n.restaurant.name}</Text>
             {n.status === 'ALERTED' && <Badge text="TABLE OPENED" color={C.ok} />}
           </View>
           <Text style={s.body}>{prettyDate(n.date)} · {prettyTime(n.fromTime)}–{prettyTime(n.toTime)} · {n.partySize} people</Text>

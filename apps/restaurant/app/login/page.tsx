@@ -30,8 +30,8 @@ export default function Login() {
   }
   return (
     <div className="login">
-      <form className="card form" style={{ width: 360 }} onSubmit={submit}>
-        <h1>Table<span style={{ color: 'var(--brand)' }}>Dash</span> for Restaurants</h1>
+      <form className="card form" style={{ width: 380, padding: 28, borderRadius: 22 }} onSubmit={submit}>
+        <div className="logo"><img src="/mark-restaurant.svg" alt="" style={{ width: 44, height: 44 }} /><div style={{ fontSize: 28 }}>Table<span className="dash">Dash</span><small style={{ color: 'var(--muted)', fontSize: 13 }}>for Restaurants</small></div></div>
         <label>Email<input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required /></label>
         <label>Password<input value={password} onChange={(e) => setPassword(e.target.value)} type="password" required /></label>
         {err && <div className="err">{err}</div>}

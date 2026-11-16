@@ -24,7 +24,7 @@ export default function GuestsScreen() {
         renderItem={({ item: x }) => (
           <Pressable onPress={() => open(x.id)} style={[s.card, { marginBottom: 8 }]}>
             <View style={[s.row, { justifyContent: 'space-between' }]}>
-              <Text style={{ fontSize: 16, fontWeight: '800' }}>{x.firstName} {x.lastName}</Text>
+              <Text style={{ fontSize: 16, fontFamily: 'Nunito_800ExtraBold' }}>{x.firstName} {x.lastName}</Text>
               {x.isVip && <Badge text="VIP" color={C.dark} />}
             </View>
             <Text style={s.muted}>{x.visitCount} visits · {x.noShowCount} no-shows · {money(x.totalSpendCents)} spent{x.lastVisitAt ? ` · last ${new Date(x.lastVisitAt).toLocaleDateString()}` : ''}</Text>

@@ -15,12 +15,12 @@ export default function ReportsScreen() {
   const [sum, setSum] = useState<any>(null);
   useEffect(() => { setPre(null); api(`/manage/${rid}/reports/pre-shift?date=${date}`).then(setPre); }, [rid, date]);
   useEffect(() => { if (can(...MANAGERS)) { const to = todayIn(tz); api(`/manage/${rid}/reports/summary?from=${addDays(to, -(range - 1))}&to=${to}`).then(setSum).catch(() => setSum(null)); } }, [rid, range]);
-  const Kpi = ({ k, v }: { k: string; v: any }) => <View style={[s.card, { minWidth: 150, flexGrow: 1 }]}><Text style={s.muted}>{k}</Text><Text style={{ fontSize: 22, fontWeight: '800' }}>{v}</Text></View>;
+  const Kpi = ({ k, v }: { k: string; v: any }) => <View style={[s.card, { minWidth: 150, flexGrow: 1 }]}><Text style={s.muted}>{k}</Text><Text style={{ fontSize: 22, fontFamily: 'Nunito_800ExtraBold' }}>{v}</Text></View>;
   const List = ({ title, items }: { title: string; items: any[] }) => (
     <View style={[s.card, { marginTop: 8 }]}>
       <Text style={s.h2}>{title} ({items.length})</Text>
       {items.length ? items.map((x) => <Text key={x.id} style={[s.body, { marginBottom: 3 }]}>
-        <Text style={{ fontWeight: '800' }}>{x.time}</Text> {x.name} · {x.partySize}{x.allergies ? ` · allergy: ${x.allergies}` : ''}{x.occasion ? ` · ${x.occasion}` : ''}{x.noShows ? ` · ${x.noShows} past no-show` : ''}{x.notes ? ` · ${x.notes}` : ''}
+        <Text style={{ fontFamily: 'Nunito_800ExtraBold' }}>{x.time}</Text> {x.name} · {x.partySize}{x.allergies ? ` · allergy: ${x.allergies}` : ''}{x.occasion ? ` · ${x.occasion}` : ''}{x.noShows ? ` · ${x.noShows} past no-show` : ''}{x.notes ? ` · ${x.notes}` : ''}
       </Text>) : <Text style={s.muted}>None</Text>}
     </View>
   );

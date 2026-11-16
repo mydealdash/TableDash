@@ -5,6 +5,7 @@ import { api } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { C, s } from '../lib/theme';
 import { Button } from '../components/ui';
+import { Logo } from '../components/Logo';
 
 export default function AccountScreen({ navigation }: any) {
   const { user, signOut, refresh } = useAuth();
@@ -21,7 +22,7 @@ export default function AccountScreen({ navigation }: any) {
 
   if (!user) return (
     <View style={[s.screen, s.pad, { justifyContent: 'center', gap: 12 }]}>
-      <Text style={[s.h1, { textAlign: 'center' }]}>TableDash</Text>
+      <View style={{ alignItems: 'center' }}><Logo size={44} /></View>
       <Text style={[s.muted, { textAlign: 'center' }]}>Sign in to earn points, save cards and set Notify alerts.</Text>
       <Button title="Sign in or create account" onPress={() => navigation.navigate('Login', {})} />
     </View>
@@ -31,8 +32,8 @@ export default function AccountScreen({ navigation }: any) {
     <ScrollView style={s.screen} contentContainerStyle={[s.pad, { gap: 12, paddingBottom: 40 }]}>
       <Text style={s.h1}>Hi, {user.firstName}</Text>
       <View style={[s.card, { backgroundColor: user.tier === 'GOLD' ? '#fff8e6' : C.card }]}>
-        <Text style={{ fontWeight: '800', fontSize: 16, color: user.tier === 'GOLD' ? C.gold : C.ink }}>{user.tier === 'GOLD' ? '★ Gold member' : 'Member'}</Text>
-        <Text style={{ fontSize: 28, fontWeight: '800', marginTop: 4 }}>{loyalty?.points ?? user.points} pts</Text>
+        <Text style={{ fontFamily: 'Nunito_800ExtraBold', fontSize: 16, color: user.tier === 'GOLD' ? C.gold : C.ink }}>{user.tier === 'GOLD' ? '★ Gold member' : 'Member'}</Text>
+        <Text style={{ fontSize: 28, fontFamily: 'Nunito_800ExtraBold', marginTop: 4 }}>{loyalty?.points ?? user.points} pts</Text>
         <Text style={s.muted}>{user.tier === 'GOLD' ? 'Gold diners get Priority Notify — first alert when tables open.' : `${toGold} more completed bookings to reach Gold.`}</Text>
       </View>
       <View style={s.card}>
@@ -44,7 +45,7 @@ export default function AccountScreen({ navigation }: any) {
         <Text style={s.h2}>Payment methods</Text>
         {cards.map((c) => <View key={c.id} style={[s.row, { justifyContent: 'space-between', paddingVertical: 4 }]}><Text style={s.body}>{c.brand} •••• {c.last4}</Text>
           <Pressable onPress={() => api(`/me/payment-methods/${c.id}`, { method: 'DELETE' }).then(() => api('/me/payment-methods').then(setCards))}><Text style={{ color: C.bad }}>Remove</Text></Pressable></View>)}
-        <Pressable onPress={() => navigation.navigate('AddCard', {})}><Text style={{ color: C.brand, fontWeight: '700', marginTop: 6 }}>+ Add card</Text></Pressable>
+        <Pressable onPress={() => navigation.navigate('AddCard', {})}><Text style={{ color: C.brand, fontFamily: 'Nunito_700Bold', marginTop: 6 }}>+ Add card</Text></Pressable>
       </View>
       <View style={s.card}>
         <Text style={s.h2}>Dining preferences</Text>

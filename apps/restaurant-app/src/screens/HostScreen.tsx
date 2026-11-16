@@ -10,6 +10,7 @@ import { Badge, Btn, Chip, Chips, Empty, Loading, Sheet } from '../components/ui
 import { FloorPlan } from '../components/FloorPlan';
 import { ResCard } from '../components/ResCard';
 import { BookingForm, WaitlistForm } from '../components/Forms';
+import { Image } from 'react-native';
 
 const COURSE_FLOW = ['SEATED', 'APPETIZER', 'ENTREE', 'DESSERT', 'CHECK_DROPPED', 'PAID', 'BUSSING'];
 type Tab = 'upcoming' | 'seated' | 'waitlist' | 'done';
@@ -86,7 +87,7 @@ export default function HostScreen() {
       {tab === 'waitlist' ? (waitlist.length ? waitlist.map((e) => (
         <Pressable key={e.id} onPress={() => pickToSeat(e, true)} style={[s.card, { marginBottom: 8, borderColor: selWait?.id === e.id ? C.brand : C.line, borderWidth: selWait?.id === e.id ? 2 : 1 }]}>
           <View style={[s.row, { justifyContent: 'space-between' }]}>
-            <Text style={{ fontSize: 16, fontWeight: '800' }}>{e.guestName} · {e.partySize}</Text>
+            <Text style={{ fontSize: 16, fontFamily: 'Nunito_800ExtraBold' }}>{e.guestName} · {e.partySize}</Text>
             <Badge text={e.status === 'NOTIFIED' ? 'Texted' : 'Waiting'} color={e.status === 'NOTIFIED' ? C.info : C.warn} />
           </View>
           <Text style={s.muted}>Waited {Math.round((Date.now() - new Date(e.createdAt).getTime()) / 60000)} min · quoted {e.quotedMinutes} min{e.joinedRemotely ? ' · joined remotely' : ''}</Text>
@@ -119,8 +120,8 @@ export default function HostScreen() {
       </Chips>
       {(selRes || selWait) && (
         <View style={[s.card, { backgroundColor: '#fff7ed', marginTop: 6 }]}>
-          <Text style={s.body}>Tap a table to seat <Text style={{ fontWeight: '800' }}>{(selRes ?? selWait).guestName}</Text>
-            {suggested.length > 0 && <Text> · suggested <Text style={{ fontWeight: '800' }}>{suggested.map(tableName).join(' + ')}</Text></Text>}</Text>
+          <Text style={s.body}>Tap a table to seat <Text style={{ fontFamily: 'Nunito_800ExtraBold' }}>{(selRes ?? selWait).guestName}</Text>
+            {suggested.length > 0 && <Text> · suggested <Text style={{ fontFamily: 'Nunito_800ExtraBold' }}>{suggested.map(tableName).join(' + ')}</Text></Text>}</Text>
           <View style={[s.row, { marginTop: 6 }]}>
             {suggested.length > 0 && <Btn small kind="primary" title="Seat at suggested" onPress={() => run(() => selRes
               ? api(`/manage/${rid}/reservations/${selRes.id}/seat`, { body: { tableIds: suggested } })
@@ -138,9 +139,12 @@ export default function HostScreen() {
   return (
     <View style={[s.screen, { padding: 12 }]} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
       <View style={[s.row, { justifyContent: 'space-between', flexWrap: 'wrap', marginBottom: 8 }]}>
-        <View>
+        <View style={s.row}>
+          <Image source={require('../../assets/logo-mark.png')} style={{ width: 36, height: 36 }} />
+          <View>
           <Text style={s.h1}>{restaurant!.name}</Text>
           <Text style={s.muted}>{covers} covers · {groups.upcoming.length} upcoming · {waitlist.length} waiting{toast ? `   ✓ ${toast}` : ''}</Text>
+          </View>
         </View>
         <View style={[s.row, { flexWrap: 'wrap' }]}>
           {can(...FLOOR) && <View style={s.row}><Text style={s.muted}>Online</Text>

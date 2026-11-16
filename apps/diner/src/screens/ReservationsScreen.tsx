@@ -35,7 +35,7 @@ export default function ReservationsScreen({ navigation }: any) {
         <Pressable onPress={() => navigation.navigate('ReservationDetail', { id: r.id })} style={[s.card, s.row, { gap: 12 }]}>
           {r.restaurant.photos[0] && <Image source={{ uri: r.restaurant.photos[0] }} style={{ width: 64, height: 64, borderRadius: 10 }} />}
           <View style={{ flex: 1, gap: 2 }}>
-            <Text style={{ fontWeight: '800', fontSize: 16 }}>{r.restaurant.name}</Text>
+            <Text style={{ fontFamily: 'Nunito_800ExtraBold', fontSize: 16 }}>{r.restaurant.name}</Text>
             <Text style={s.body}>{inZone(r.startsAt, r.restaurant.timezone).label} · {r.partySize} people</Text>
             <Badge text={r.status.replace('_', ' ')} color={COLOR[r.status]} />
           </View>

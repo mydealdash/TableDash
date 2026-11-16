@@ -17,7 +17,7 @@ export default function Admin() {
   return (
     <div className="shell">
       <nav className="side">
-        <div className="brand">Table<span>Dash</span> <small style={{ fontWeight: 400, fontSize: 12 }}>admin</small></div>
+        <div className="logo" style={{ padding: '4px 8px 18px', color: '#fff' }}><img src="/mark.svg" alt="" /><div>Table<span className="dash">Dash</span><small>Admin console</small></div></div>
         {TABS.map((t) => <a key={t} href="#" className={tab === t ? 'active' : ''} onClick={(e) => { e.preventDefault(); setTab(t); }}>{t}</a>)}
         <div className="foot"><button className="btn sm" onClick={() => { clearSession(); router.replace('/login'); }}>Sign out</button></div>
       </nav>

@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Text } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { DeviceFrame } from './src/components/DeviceFrame';
+import { useFonts, Nunito_700Bold, Nunito_800ExtraBold, Nunito_900Black } from '@expo-google-fonts/nunito';
 import { SessionProvider, useSession } from './src/lib/session';
 import { C } from './src/lib/theme';
 import { Loading } from './src/components/ui';
@@ -23,7 +24,7 @@ const icon = (g: string) => ({ color }: { color: string }) => <Text style={{ col
 function Tabs() {
   const { restaurant } = useSession();
   return (
-    <Tab.Navigator key={restaurant!.id} screenOptions={{ tabBarActiveTintColor: C.brand, headerStyle: { backgroundColor: C.bg }, headerShadowVisible: false }}>
+    <Tab.Navigator key={restaurant!.id} screenOptions={{ tabBarActiveTintColor: C.brand, tabBarInactiveTintColor: C.muted, tabBarLabelStyle: { fontFamily: 'Nunito_700Bold' }, headerStyle: { backgroundColor: C.bg }, headerTitleStyle: { fontFamily: 'Nunito_800ExtraBold', color: C.ink }, headerShadowVisible: false }}>
       <Tab.Screen name="Host" component={HostScreen} options={{ headerShown: false, tabBarIcon: icon('▦'), title: 'Host stand' }} />
       <Tab.Screen name="Bookings" component={BookingsScreen} options={{ tabBarIcon: icon('▤') }} />
       <Tab.Screen name="Guests" component={GuestsScreen} options={{ tabBarIcon: icon('☺'), title: 'Guestbook' }} />
@@ -49,5 +50,7 @@ function Root() {
 }
 
 export default function App() {
+  const [fontsLoaded] = useFonts({ Nunito_700Bold, Nunito_800ExtraBold, Nunito_900Black });
+  if (!fontsLoaded) return null;
   return <DeviceFrame background="#f4f2ee"><SafeAreaProvider><SessionProvider><StatusBar style="dark" /><Root /></SessionProvider></SafeAreaProvider></DeviceFrame>;
 }

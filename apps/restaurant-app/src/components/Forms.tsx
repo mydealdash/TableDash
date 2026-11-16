@@ -56,7 +56,7 @@ export function WaitlistForm({ rid, onDone }: { rid: string; onDone: () => void 
       <Text style={s.label}>Party</Text>
       <Chips>{Array.from({ length: 10 }, (_, i) => i + 1).map((n) => <Chip key={n} label={String(n)} on={f.partySize === n} onPress={() => setF({ ...f, partySize: n })} />)}</Chips>
       <Text style={s.label}>Notes</Text><TextInput style={s.input} value={f.notes} onChangeText={(v) => setF({ ...f, notes: v })} />
-      <Text style={[s.body, { marginTop: 10 }]}>Suggested quote: <Text style={{ fontWeight: '800' }}>{quote == null ? '—' : `${quote} min`}</Text></Text>
+      <Text style={[s.body, { marginTop: 10 }]}>Suggested quote: <Text style={{ fontFamily: 'Nunito_800ExtraBold' }}>{quote == null ? '—' : `${quote} min`}</Text></Text>
       {!!err && <Text style={{ color: '#b91c1c', marginTop: 8 }}>{err}</Text>}
       <Btn style={{ marginTop: 14 }} kind="primary" title="Add to waitlist" disabled={!f.guestName || !f.guestPhone} onPress={async () => {
         try { await api(`/manage/${rid}/waitlist`, { body: { ...f, notes: f.notes || undefined } }); onDone(); } catch (e: any) { setErr(e.message); }

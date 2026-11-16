@@ -85,8 +85,8 @@ export default function RestaurantScreen({ route, navigation }: NativeStackScree
 
         <View style={[s.card, { marginTop: 14 }]}>
           <Pressable onPress={() => setEditing(!editing)} style={[s.row, { justifyContent: 'space-between' }]}>
-            <Text style={{ fontWeight: '700' }}>{pdt.party} people · {pdt.date} </Text>
-            <Text style={{ color: C.brand, fontWeight: '700' }}>{editing ? 'Done' : 'Change'}</Text>
+            <Text style={{ fontFamily: 'Nunito_700Bold' }}>{pdt.party} people · {pdt.date} </Text>
+            <Text style={{ color: C.brand, fontFamily: 'Nunito_700Bold' }}>{editing ? 'Done' : 'Change'}</Text>
           </Pressable>
           {editing && <PartyDateTime value={pdt} onChange={setPdt} />}
           {r.tableTypes.length > 1 && <ChipRow>
@@ -114,7 +114,7 @@ export default function RestaurantScreen({ route, navigation }: NativeStackScree
         </View>
 
         <Pressable onPress={() => navigation.navigate('Waitlist', { restaurantId: r.id, name: r.name })} style={[s.card, { marginTop: 10 }]}>
-          <Text style={{ fontWeight: '700' }}>Walking in? Join the waitlist remotely →</Text>
+          <Text style={{ fontFamily: 'Nunito_700Bold' }}>Walking in? Join the waitlist remotely →</Text>
         </Pressable>
 
         {r.policy && (
@@ -138,7 +138,7 @@ export default function RestaurantScreen({ route, navigation }: NativeStackScree
         {r.reviews.length === 0 && <Text style={s.muted}>No reviews yet.</Text>}
         {r.reviews.map((rv: any) => (
           <View key={rv.id} style={[s.card, { marginBottom: 8 }]}>
-            <Text style={{ fontWeight: '700' }}>{'★'.repeat(rv.rating)} {rv.author}</Text>
+            <Text style={{ fontFamily: 'Nunito_700Bold' }}>{'★'.repeat(rv.rating)} {rv.author}</Text>
             <Text style={s.body}>{rv.text}</Text>
             {rv.reply && <Text style={[s.muted, { marginTop: 6 }]}>Reply from the restaurant: {rv.reply}</Text>}
           </View>

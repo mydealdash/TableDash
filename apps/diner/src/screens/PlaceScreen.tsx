@@ -45,7 +45,7 @@ export default function PlaceScreen({ route, navigation }: NativeStackScreenProp
         {p.summary && <Text style={[s.body, { marginTop: 4 }]}>{p.summary}</Text>}
 
         <View style={[s.card, { marginTop: 12, backgroundColor: C.brandSoft, gap: 8 }]}>
-          <Text style={{ fontWeight: '800', fontSize: 16 }}>Not on TableDash yet</Text>
+          <Text style={{ fontFamily: 'Nunito_800ExtraBold', fontSize: 16 }}>Not on TableDash yet</Text>
           <Text style={s.body}>You can't book here through TableDash yet. Call or use their website to reserve, or ask us to tell you when they join.</Text>
           <Button title={p.interested ? "✓ We'll tell you when they join" : 'Tell me when they join'} kind={p.interested ? 'ghost' : 'primary'} onPress={interest} />
         </View>

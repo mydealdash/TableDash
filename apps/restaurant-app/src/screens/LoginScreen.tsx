@@ -3,6 +3,7 @@ import { KeyboardAvoidingView, Platform, Text, TextInput, View } from 'react-nat
 import { useSession } from '../lib/session';
 import { C, s } from '../lib/theme';
 import { Btn } from '../components/ui';
+import { Logo } from '../components/Logo';
 
 export default function LoginScreen() {
   const { signIn } = useSession();
@@ -10,10 +11,10 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('password123');
   const [err, setErr] = useState(''); const [busy, setBusy] = useState(false);
   return (
-    <KeyboardAvoidingView style={[s.screen, { justifyContent: 'center', alignItems: 'center', padding: 20 }]} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView style={[s.screen, { justifyContent: 'center', alignItems: 'center', padding: 20, backgroundColor: C.dark }]} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={[s.card, { width: '100%', maxWidth: 420, padding: 20 }]}>
-        <Text style={s.h1}>Table<Text style={{ color: C.brand }}>Dash</Text></Text>
-        <Text style={[s.muted, { marginBottom: 8 }]}>for Restaurants</Text>
+        <Logo size={44} subtitle="for Restaurants" />
+        <View style={{ height: 12 }} />
         <Text style={s.label}>Email</Text><TextInput style={s.input} value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
         <Text style={s.label}>Password</Text><TextInput style={s.input} value={password} onChangeText={setPassword} secureTextEntry />
         {!!err && <Text style={{ color: C.bad, marginTop: 8 }}>{err}</Text>}

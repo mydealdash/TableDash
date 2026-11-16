@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Text } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { DeviceFrame } from './src/components/DeviceFrame';
+import { useFonts, Nunito_700Bold, Nunito_800ExtraBold, Nunito_900Black } from '@expo-google-fonts/nunito';
 import { AuthProvider, useAuth } from './src/lib/auth';
 import { C } from './src/lib/theme';
 import { Loading } from './src/components/ui';
@@ -39,7 +40,7 @@ const icon = (glyph: string) => ({ color }: { color: string }) => <Text style={{
 
 function Tabs() {
   return (
-    <Tab.Navigator screenOptions={{ tabBarActiveTintColor: C.brand, headerShown: false }}>
+    <Tab.Navigator screenOptions={{ tabBarActiveTintColor: C.brand, tabBarInactiveTintColor: C.muted, tabBarLabelStyle: { fontFamily: 'Nunito_700Bold' }, headerShown: false, headerTitleStyle: { fontFamily: 'Nunito_800ExtraBold', color: C.ink } }}>
       <Tab.Screen name="Discover" component={DiscoverScreen as any} options={{ tabBarIcon: icon('⌕'), headerShown: false }} />
       <Tab.Screen name="Reservations" component={ReservationsScreen} options={{ tabBarIcon: icon('▤'), headerShown: true }} />
       <Tab.Screen name="Notify" component={NotifyScreen} options={{ tabBarIcon: icon('◔'), headerShown: false }} />
@@ -59,7 +60,7 @@ function Root() {
   if (!ready) return <Loading />;
   return (
     <NavigationContainer linking={linking} theme={{ ...DefaultTheme, colors: { ...DefaultTheme.colors, background: C.bg, primary: C.brand } }}>
-      <Stack.Navigator screenOptions={{ headerTintColor: C.ink, headerBackTitle: 'Back' }}>
+      <Stack.Navigator screenOptions={{ headerTintColor: C.ink, headerBackTitle: 'Back', headerTitleStyle: { fontFamily: 'Nunito_800ExtraBold' } }}>
         <Stack.Screen name="Tabs" component={Tabs} options={{ headerShown: false, title: 'TableDash' }} />
         <Stack.Screen name="Restaurant" component={RestaurantScreen} options={{ title: '' }} />
         <Stack.Screen name="Checkout" component={CheckoutScreen} options={{ title: 'Confirm details' }} />
@@ -75,6 +76,8 @@ function Root() {
 }
 
 export default function App() {
+  const [fontsLoaded] = useFonts({ Nunito_700Bold, Nunito_800ExtraBold, Nunito_900Black });
+  if (!fontsLoaded) return null;
   return (
     <DeviceFrame background="#faf8f5">
       <SafeAreaProvider>

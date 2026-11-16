@@ -81,7 +81,7 @@ export default function MoreScreen({ navigation }: any) {
         </View>
         {gResults?.map((g) => (
           <View key={g.placeId} style={[s.row, { justifyContent: 'space-between', marginTop: 8 }]}>
-            <View style={{ flex: 1 }}><Text style={{ fontWeight: '700' }}>{g.name}</Text><Text style={s.muted}>{g.address}{g.rating ? ` · ★ ${g.rating}` : ''}</Text></View>
+            <View style={{ flex: 1 }}><Text style={{ fontFamily: 'Nunito_700Bold' }}>{g.name}</Text><Text style={s.muted}>{g.address}{g.rating ? ` · ★ ${g.rating}` : ''}</Text></View>
             <Btn small kind={google.placeId === g.placeId ? 'ghost' : 'primary'} title={google.placeId === g.placeId ? 'Linked' : 'This is us'}
               onPress={() => api(`/manage/${rid}/settings/google`, { method: 'PUT', body: { placeId: g.placeId } }).then(() => { setGResults(null); loadGoogle(); })} />
           </View>

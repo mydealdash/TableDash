@@ -13,10 +13,10 @@ export default function ConfirmationScreen({ route, navigation }: NativeStackScr
       <Text style={{ fontSize: 48, textAlign: 'center' }}>✓</Text>
       <Text style={[s.h1, { textAlign: 'center' }]}>You're booked</Text>
       <View style={[s.card, { gap: 4 }]}>
-        <Text style={{ fontSize: 18, fontWeight: '800' }}>{restaurant.name}</Text>
+        <Text style={{ fontSize: 18, fontFamily: 'Nunito_800ExtraBold' }}>{restaurant.name}</Text>
         <Text style={s.body}>{when}</Text>
         <Text style={s.body}>Party of {r.partySize}</Text>
-        <Text style={s.muted}>Confirmation code <Text style={{ fontWeight: '800', color: C.ink }}>{r.code}</Text></Text>
+        <Text style={s.muted}>Confirmation code <Text style={{ fontFamily: 'Nunito_800ExtraBold', color: C.ink }}>{r.code}</Text></Text>
       </View>
       <Text style={[s.muted, { textAlign: 'center' }]}>We sent a confirmation and will remind you the day before.</Text>
       <Button title="Share with your party" kind="ghost" onPress={() => Share.share({ message: `Dinner at ${restaurant.name}, ${when}, party of ${r.partySize}. Code ${r.code}.` })} />

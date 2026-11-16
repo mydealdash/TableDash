@@ -8,6 +8,7 @@ import { Badge, Chip, ChipRow, Empty, Loading, SlotButton } from '../components/
 import { PartyDateTime, PDT } from '../components/PartyDateTime';
 import { GoogleMapsAttribution, googlePhotoUri } from '../components/GoogleContent';
 import type { RootStack } from '../../App';
+import { Logo } from '../components/Logo';
 
 /**
  * Search: restaurants come from Google (photos, ratings, prices, addresses) when Google is
@@ -71,12 +72,13 @@ export default function DiscoverScreen({ navigation }: NativeStackScreenProps<Ro
         contentContainerStyle={{ padding: 16, gap: 14 }}
         ListHeaderComponent={
           <View style={{ gap: 10 }}>
-            <Text style={s.h1}>Find a table</Text>
+            <Logo size={30} />
+            <Text style={[s.h1, { marginTop: 6 }]}>Find a table</Text>
             <TextInput style={s.input} placeholder={coords ? 'Search any restaurant or cuisine near you' : 'Restaurant, cuisine or city'} value={q}
               onChangeText={setQ} returnKeyType="search" onSubmitEditing={() => setSubmitted(q.trim())} onBlur={() => setSubmitted(q.trim())} />
             <Pressable onPress={() => setShowPicker(!showPicker)} style={[s.card, s.row, { justifyContent: 'space-between' }]}>
-              <Text style={{ fontWeight: '700' }}>{pdt.party} {pdt.party === 1 ? 'person' : 'people'} · {pdt.date === localDate(0) ? 'Today' : pdt.date} · {pdt.time}</Text>
-              <Text style={{ color: C.brand, fontWeight: '700' }}>{showPicker ? 'Done' : 'Change'}</Text>
+              <Text style={{ fontFamily: 'Nunito_700Bold' }}>{pdt.party} {pdt.party === 1 ? 'person' : 'people'} · {pdt.date === localDate(0) ? 'Today' : pdt.date} · {pdt.time}</Text>
+              <Text style={{ color: C.brand, fontFamily: 'Nunito_700Bold' }}>{showPicker ? 'Done' : 'Change'}</Text>
             </Pressable>
             {showPicker && <PartyDateTime value={pdt} onChange={setPdt} />}
             <ChipRow>
@@ -98,7 +100,7 @@ export default function DiscoverScreen({ navigation }: NativeStackScreenProps<Ro
               {photo ? <Image source={{ uri: photo }} style={{ height: 150, backgroundColor: C.line }} /> : <View style={{ height: 80, backgroundColor: C.line }} />}
               <View style={{ padding: 14, gap: 4 }}>
                 <View style={[s.row, { justifyContent: 'space-between' }]}>
-                  <Text style={{ fontSize: 18, fontWeight: '800', flexShrink: 1 }}>{r.name}</Text>
+                  <Text style={{ fontSize: 18, fontFamily: 'Nunito_800ExtraBold', flexShrink: 1 }}>{r.name}</Text>
                   {r.tabledash ? <Badge text="BOOK ON TABLEDASH" color={C.ok} /> : <Badge text="NOT ON TABLEDASH YET" />}
                 </View>
                 <Text style={s.muted}>

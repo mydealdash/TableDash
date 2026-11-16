@@ -27,7 +27,7 @@ export default function WaitlistScreen({ route }: NativeStackScreenProps<RootSta
     <View style={[s.screen, s.pad, { gap: 10 }]}>
       <Text style={s.h1}>You're on the list</Text>
       <View style={s.card}>
-        <Text style={{ fontSize: 40, fontWeight: '800' }}>{entry.status === 'NOTIFIED' ? 'Table ready!' : `#${entry.position ?? '—'}`}</Text>
+        <Text style={{ fontSize: 40, fontFamily: 'Nunito_800ExtraBold' }}>{entry.status === 'NOTIFIED' ? 'Table ready!' : `#${entry.position ?? '—'}`}</Text>
         <Text style={s.body}>{name} · party of {entry.partySize}</Text>
         <Text style={s.muted}>Quoted wait {entry.quotedMinutes} min. We'll text you when your table is ready.</Text>
       </View>

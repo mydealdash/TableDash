@@ -6,9 +6,36 @@
     "version": "0.1.0",
     "orientation": "default",
     "userInterfaceStyle": "light",
-    "ios": { "bundleIdentifier": "com.tabledash.restaurant", "supportsTablet": true },
-    "android": { "package": "com.tabledash.restaurant" },
-    "plugins": ["expo-secure-store"],
-    "extra": { "apiUrl": "http://localhost:4000" }
+    "ios": {
+      "bundleIdentifier": "com.tabledash.restaurant",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.tabledash.restaurant",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#14213D"
+      }
+    },
+    "plugins": [
+      "expo-secure-store"
+    ],
+    "extra": {
+      "apiUrl": "http://localhost:4000"
+    },
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#14213D"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "name": "TableDash for Restaurants",
+      "shortName": "TableDash",
+      "themeColor": "#14213D",
+      "backgroundColor": "#14213D"
+    },
+    "primaryColor": "#FF5A3C"
   }
 }

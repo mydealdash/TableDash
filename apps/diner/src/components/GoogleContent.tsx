@@ -70,7 +70,7 @@ export function GoogleReviews({ g }: { g: GListing }) {
       </View>
       {g.rating != null && (
         <Pressable onPress={() => open(g.googleMapsUri)}>
-          <Text style={s.body}><Text style={{ fontWeight: '800', fontSize: 18 }}>★ {g.rating.toFixed(1)}</Text>  from {g.userRatingCount ?? 0} reviews · see all on Google Maps</Text>
+          <Text style={s.body}><Text style={{ fontFamily: 'Nunito_800ExtraBold', fontSize: 18 }}>★ {g.rating.toFixed(1)}</Text>  from {g.userRatingCount ?? 0} reviews · see all on Google Maps</Text>
         </Pressable>
       )}
       {g.reviews.map((r, i) => (
@@ -79,7 +79,7 @@ export function GoogleReviews({ g }: { g: GListing }) {
             {r.author.photoUri
               ? <Image source={{ uri: r.author.photoUri }} style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: C.line }} />
               : <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: C.line }} />}
-            <Text style={{ fontWeight: '700', color: C.ink }}>{r.author.name}</Text>
+            <Text style={{ fontFamily: 'Nunito_700Bold', color: C.ink }}>{r.author.name}</Text>
           </Pressable>
           <Text style={s.muted}>{'★'.repeat(Math.round(r.rating))}{'☆'.repeat(5 - Math.round(r.rating))}{r.relativeTime ? ` · ${r.relativeTime}` : ''}
             {r.visitDate ? ` · visited ${String(r.visitDate.month).padStart(2, '0')}/${r.visitDate.year}` : ''}</Text>

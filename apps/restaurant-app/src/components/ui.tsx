@@ -10,21 +10,21 @@ export function Btn({ title, onPress, kind = 'ghost', small, disabled, loading, 
     <Pressable onPress={onPress} disabled={disabled || loading} hitSlop={4}
       style={({ pressed }) => [{ backgroundColor: bg, borderRadius: 10, paddingVertical: small ? 7 : 12, paddingHorizontal: small ? 10 : 16, alignItems: 'center',
         borderWidth: kind === 'ghost' || kind === 'danger' ? 1 : 0, borderColor: C.line, opacity: disabled ? 0.45 : pressed ? 0.8 : 1 }, style]}>
-      {loading ? <ActivityIndicator color={fg} /> : <Text style={{ color: fg, fontWeight: '700', fontSize: small ? 13 : 15 }}>{title}</Text>}
+      {loading ? <ActivityIndicator color={fg} /> : <Text style={{ color: fg, fontFamily: 'Nunito_700Bold', fontSize: small ? 13 : 15 }}>{title}</Text>}
     </Pressable>
   );
 }
 export function Chip({ label, on, onPress }: { label: string; on?: boolean; onPress: () => void }) {
   return (
     <Pressable onPress={onPress} style={{ paddingHorizontal: 12, paddingVertical: 7, borderRadius: 999, borderWidth: 1, borderColor: on ? C.dark : C.line, backgroundColor: on ? C.dark : '#fff' }}>
-      <Text style={{ color: on ? '#fff' : C.ink, fontWeight: '600', fontSize: 13 }}>{label}</Text>
+      <Text style={{ color: on ? '#fff' : C.ink, fontFamily: 'Nunito_700Bold', fontSize: 13 }}>{label}</Text>
     </Pressable>
   );
 }
 export const Chips = ({ children }: { children: React.ReactNode }) =>
   <ScrollView horizontal style={{ flexGrow: 0 }} showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingVertical: 4, alignItems: "center" }}>{children}</ScrollView>;
 export function Badge({ text, color = C.muted }: { text: string; color?: string }) {
-  return <View style={{ borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2, backgroundColor: color + '1F', alignSelf: 'flex-start' }}><Text style={{ color, fontSize: 11, fontWeight: '800' }}>{text}</Text></View>;
+  return <View style={{ borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2, backgroundColor: color + '1F', alignSelf: 'flex-start' }}><Text style={{ color, fontSize: 11, fontFamily: 'Nunito_800ExtraBold' }}>{text}</Text></View>;
 }
 export function Sheet({ visible, title, onClose, children }: { visible: boolean; title: string; onClose: () => void; children: React.ReactNode }) {
   if (Platform.OS === 'web') {

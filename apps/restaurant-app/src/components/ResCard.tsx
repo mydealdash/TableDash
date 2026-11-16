@@ -8,7 +8,7 @@ export function ResCard({ r, tableName, selected, onPress, children }: { r: any;
   return (
     <Pressable onPress={onPress} style={[s.card, { marginBottom: 8, borderColor: selected ? C.brand : C.line, borderWidth: selected ? 2 : 1 }]}>
       <View style={[s.row, { justifyContent: 'space-between' }]}>
-        <Text style={{ fontSize: 16, fontWeight: '800', flexShrink: 1 }}>{r.localTime} · {r.guestName} · {r.partySize}</Text>
+        <Text style={{ fontSize: 16, fontFamily: 'Nunito_800ExtraBold', flexShrink: 1 }}>{r.localTime} · {r.guestName} · {r.partySize}</Text>
         <Badge text={label(r.status)} color={RES_COLOR[r.status]} />
       </View>
       <Text style={[s.muted, { marginTop: 3 }]}>
