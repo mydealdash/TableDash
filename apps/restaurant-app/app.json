@@ -1,0 +1,14 @@
+{
+  "expo": {
+    "name": "TableDash for Restaurants",
+    "slug": "tabledash-restaurant",
+    "scheme": "tabledash-restaurant",
+    "version": "0.1.0",
+    "orientation": "default",
+    "userInterfaceStyle": "light",
+    "ios": { "bundleIdentifier": "com.tabledash.restaurant", "supportsTablet": true },
+    "android": { "package": "com.tabledash.restaurant" },
+    "plugins": ["expo-secure-store"],
+    "extra": { "apiUrl": "http://localhost:4000" }
+  }
+}

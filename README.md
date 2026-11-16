@@ -7,17 +7,41 @@ Built from the *OpenTable & Resy — Functional Analysis and Functional Specific
 | App | Path | Stack | Port |
 | --- | --- | --- | --- |
 | API | `apps/api` | NestJS 10, Drizzle ORM, PostgreSQL 16, Socket.IO | 4000 |
-| Restaurant host stand + back office | `apps/restaurant` | Next.js 14 | 3001 |
+| Restaurant back office (web, full setup) | `apps/restaurant` | Next.js 14 | 3001 |
 | Internal admin console | `apps/admin` | Next.js 14 | 3002 |
-| Diner mobile app (iOS / Android) | `apps/mobile` | Expo SDK 52, React Native 0.76 | — |
+| Diner mobile app (iOS / Android) | `apps/diner` | Expo SDK 52, React Native 0.76 | — |
+| Restaurant mobile app (iPad / phone) | `apps/restaurant-app` | Expo SDK 52, React Native 0.76, react-native-svg | — |
+
+## Mobile apps
+
+Both diner and restaurant experiences are native Expo apps for iOS and Android.
+
+- **Diner app** (`apps/diner`): search, restaurant pages, booking with hold timer, deposits, Notify, remote waitlist, manage bookings, reviews, points, account.
+- **Restaurant app** (`apps/restaurant-app`): built for an iPad at the host stand (two-pane list + live floor plan; screen stays awake) and works on phones (list / floor toggle). Host stand, seating by tapping a table, course status, walk-ins, waitlist with table-ready texts, bookings by date with modify/cancel/no-show, large-party approvals, fee waivers, guestbook, review replies, pre-shift and performance reports, online-booking switch, booking rules, closed dates, restaurant switcher. Floor-plan drawing, policies and staff invites stay in the web back office.
+
+**Try them on your phone (Expo Go):**
+```bash
+cd apps/diner            # or apps/restaurant-app
+npm install
+EXPO_PUBLIC_API_URL=https://<your-api>.onrender.com npx expo start
+```
+Scan the QR code with the Expo Go app (iOS/Android).
+
+**Install as real apps (EAS Build):** set `EXPO_PUBLIC_API_URL` in each app's `eas.json`, then
+```bash
+npm install -g eas-cli && eas login
+eas build --profile preview --platform android   # installable APK link
+eas build --profile preview --platform ios       # needs an Apple Developer account
+```
+`eas submit` uploads production builds to the App Store and Google Play.
 
 ## Deploy a test environment (Render, free tier)
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/mydealdash/TableDash)
 
-`render.yaml` creates five things: Postgres, the API, the restaurant app, the admin console, and a **web build of the diner app** for testing in a browser. On first start the API runs migrations and loads the demo data. Free services sleep after 15 minutes idle, so the first request after a pause takes about a minute. Render's free Postgres expires after 30 days.
+`render.yaml` creates Postgres, the API, the web back office, the admin console, and **browser builds of both mobile apps** (`tabledash-diner`, `tabledash-restaurant-app`) for quick testing. On first start the API runs migrations and loads the demo data. Free services sleep after 15 minutes idle, so the first request after a pause takes about a minute. Render's free Postgres expires after 30 days.
 
-To test the diner app on a phone, run `cd apps/mobile && npm install && EXPO_PUBLIC_API_URL=https://<your-api>.onrender.com npx expo start` and scan the QR code with Expo Go.
+To test the diner app on a phone, run `cd apps/diner && npm install && EXPO_PUBLIC_API_URL=https://<your-api>.onrender.com npx expo start` and scan the QR code with Expo Go.
 
 ## Quick start
 
@@ -38,7 +62,7 @@ npm run dev:api          # http://localhost:4000/v1
 npm run dev:restaurant   # http://localhost:3001
 npm run dev:admin        # http://localhost:3002
 
-cd apps/mobile && npm install
+cd apps/diner && npm install
 EXPO_PUBLIC_API_URL=http://<your-LAN-IP>:4000 npx expo start   # scan with Expo Go
 ```
 
@@ -108,7 +132,7 @@ Admin console ──────────────────────
 
 These are working stubs behind clean interfaces:
 
-- **Payments:** `MockPaymentProvider` (`apps/api/src/payments/provider.ts`). Add a Stripe or Adyen adapter, and replace `tokenize()` in `apps/mobile/src/screens/AddCardScreen.tsx` with the provider's card SDK.
+- **Payments:** `MockPaymentProvider` (`apps/api/src/payments/provider.ts`). Add a Stripe or Adyen adapter, and replace `tokenize()` in `apps/diner/src/screens/AddCardScreen.tsx` with the provider's card SDK.
 - **SMS, email and push delivery:** messages go to the `message_outbox` table. Set `MESSAGING_PROVIDER` and add a worker for Twilio, SES or Expo Push.
 - **Event bus:** in-process today. Swap `EventBus` (`apps/api/src/common/events.ts`) for Redis Streams or Kafka before running more than one API instance, so real-time events and Notify reach every node.
 - **Not built in this MVP:** the "should have" and "could have" items in the spec. That covers the AI concierge, email campaigns and segments, prepaid ticketed experiences, gift cards and dining credits, paid search placement, POS integrations, the public partner API with OAuth and webhooks, SSO, and an embeddable web widget for restaurant websites. The data model and channel tags already leave room for them.
@@ -126,5 +150,5 @@ apps/api/drizzle  SQL migrations
 apps/api/test     engine unit tests + e2e tests
 apps/restaurant   Next.js host stand & back office
 apps/admin        Next.js admin console
-apps/mobile       Expo diner app
+apps/diner       Expo diner app
 ```

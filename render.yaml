@@ -59,7 +59,23 @@ services:
   - type: web
     name: tabledash-diner
     runtime: static
-    rootDir: apps/mobile
+    rootDir: apps/diner
+    buildCommand: npm ci && npx expo export --platform web --output-dir dist
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: EXPO_PUBLIC_API_URL
+        fromService: { type: web, name: tabledash-api, envVarKey: RENDER_EXTERNAL_URL }
+
+  - type: web
+    name: tabledash-restaurant-app
+    runtime: static
+    rootDir: apps/restaurant-app
     buildCommand: npm ci && npx expo export --platform web --output-dir dist
     staticPublishPath: dist
     routes:

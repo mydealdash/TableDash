@@ -24,7 +24,7 @@ export function Chip({ label, on, onPress }: { label: string; on?: boolean; onPr
 }
 
 export function ChipRow({ children }: { children: React.ReactNode }) {
-  return <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 4 }}>{children}</ScrollView>;
+  return <ScrollView horizontal style={{ flexGrow: 0 }} showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 4, alignItems: "center" }}>{children}</ScrollView>;
 }
 
 /** Bookable time button, the core affordance of both apps (slot-first booking). */

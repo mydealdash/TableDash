@@ -3,8 +3,8 @@ dist
 .next
 .env
 *.log
-apps/mobile/.expo
-apps/mobile/node_modules
+apps/diner/.expo
+apps/diner/node_modules
 apps/*/.next
 apps/api/.env
 *.tsbuildinfo
