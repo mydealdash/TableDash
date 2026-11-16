@@ -40,7 +40,7 @@ services:
       - key: NODE_VERSION
         value: 22
       - key: NEXT_PUBLIC_API_URL
-        fromService: { type: web, name: tabledash-api, property: host }
+        fromService: { type: web, name: tabledash-api, envVarKey: RENDER_EXTERNAL_URL }
 
   - type: web
     name: tabledash-admin
@@ -52,9 +52,9 @@ services:
       - key: NODE_VERSION
         value: 22
       - key: NEXT_PUBLIC_API_URL
-        fromService: { type: web, name: tabledash-api, property: host }
+        fromService: { type: web, name: tabledash-api, envVarKey: RENDER_EXTERNAL_URL }
       - key: NEXT_PUBLIC_RESTAURANT_APP_URL
-        fromService: { type: web, name: tabledash-restaurant, property: host }
+        fromService: { type: web, name: tabledash-restaurant, envVarKey: RENDER_EXTERNAL_URL }
 
   - type: web
     name: tabledash-diner
@@ -70,4 +70,4 @@ services:
       - key: NODE_VERSION
         value: 22
       - key: EXPO_PUBLIC_API_URL
-        fromService: { type: web, name: tabledash-api, property: host }
+        fromService: { type: web, name: tabledash-api, envVarKey: RENDER_EXTERNAL_URL }
