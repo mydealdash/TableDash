@@ -1,0 +1,122 @@
+# TableDash
+
+A restaurant reservation platform with the same functional scope as OpenTable and Resy: a diner app and marketplace, a restaurant operating system (host stand, back office) and an internal admin console, all on one booking engine.
+
+Built from the *OpenTable & Resy — Functional Analysis and Functional Specification*. Requirement IDs in code comments (`BKG-02`, `NTF-03`, …) refer to that spec.
+
+| App | Path | Stack | Port |
+| --- | --- | --- | --- |
+| API | `apps/api` | NestJS 10, Drizzle ORM, PostgreSQL 16, Socket.IO | 4000 |
+| Restaurant host stand + back office | `apps/restaurant` | Next.js 14 | 3001 |
+| Internal admin console | `apps/admin` | Next.js 14 | 3002 |
+| Diner mobile app (iOS / Android) | `apps/mobile` | Expo SDK 52, React Native 0.76 | — |
+
+## Quick start
+
+**Docker (API + web apps + Postgres):**
+
+```bash
+docker compose up --build
+docker compose exec api npx ts-node src/db/seed.ts   # demo data
+```
+
+**Local development:**
+
+```bash
+npm install                                    # API + web apps (npm workspaces)
+cp apps/api/.env.example apps/api/.env         # point DATABASE_URL at your Postgres
+npm run db:migrate && npm run db:seed
+npm run dev:api          # http://localhost:4000/v1
+npm run dev:restaurant   # http://localhost:3001
+npm run dev:admin        # http://localhost:3002
+
+cd apps/mobile && npm install
+EXPO_PUBLIC_API_URL=http://<your-LAN-IP>:4000 npx expo start   # scan with Expo Go
+```
+
+**Demo logins** (password `password123`):
+
+| Who | Email |
+| --- | --- |
+| Diner | `diner@tabledash.dev` (has a saved test card) — or sign in by phone; dev mode shows the OTP |
+| Host | `host+osteria-lume@tabledash.dev` (also `harbor-and-vine`, `kiln-tasting-counter`, `saffron-and-salt`) |
+| Owner | `owner+<slug>@tabledash.dev` |
+| Multi-location manager | `manager@tabledash.dev` |
+| Platform admin | `admin@tabledash.dev` |
+
+The four seed restaurants each exercise a different policy: card hold with no-show fee, no deposit, per-person deposit (tasting counter), and walk-in friendly.
+
+## Tests
+
+```bash
+npm test     # needs a local Postgres; creates and drops `tabledash_test`
+```
+
+22 tests: the availability engine (slots, time zones, best-fit and combined tables, pacing, closures) and end-to-end flows A–F from the spec — search → hold → confirm, deposits and refunds, expired holds, idempotent retries, Notify recovery, seat → complete → loyalty and billing, no-show fees, waitlist, partner/AI channel, admin onboarding and policy versioning.
+
+The concurrency tests fire 25 simultaneous holds at the only table that fits, and 20 simultaneous bookings at one slot. Exactly one hold wins, and no table is ever double-booked.
+
+## How it works
+
+```
+Diner app / widget / partners / AI agents ──┐
+Restaurant host stand + back office ────────┼──► API (/v1) ──► Postgres
+Admin console ──────────────────────────────┘      │
+                                     Socket.IO ◄───┤ event bus → Notify, messaging, CRM, billing
+                                                   └ scheduled jobs (hold expiry, reminders, auto-resolve)
+```
+
+- **Availability engine** (`apps/api/src/availability/engine.ts`): a pure function that turns shifts, slot interval, pacing (covers *and* parties), turn times by party size, tables and table combinations, closures and existing occupancy into bookable slots. Search, holds, commits and modifications all call the same function.
+- **No double-bookings:** every write that changes inventory takes a Postgres advisory lock on *(restaurant, local date)* and re-runs the engine inside the lock. Commits accept an idempotency key.
+- **Holds:** selecting a time places a 5-minute hold (configurable per restaurant). Expired or abandoned holds release the slot and trigger Notify.
+- **Reservation state machine:** `REQUESTED → CONFIRMED → SEATED → COMPLETED`, plus `CANCELLED`, `NO_SHOW` and `DECLINED`. Every transition is written to `reservation_events` for audit and chargeback evidence.
+- **Policies are versioned.** A booking keeps the policy the guest accepted, so fees always follow the terms shown at checkout.
+- **Notify:** a released slot is matched to subscribers. Gold-tier diners are alerted first, and everyone else after `NOTIFY_PRIORITY_WINDOW_SECONDS`. Alerts are first come, first served.
+- **Channels and billing:** every booking carries a channel (`APP`, `WEB`, `WIDGET`, `PARTNER`, `AI_AGENT`, `PHONE`, `WALK_IN`). Completed network covers are written to `billable_covers` for per-cover billing. Partner and AI-agent bookings need an `x-partner-key` (see `PARTNER_KEYS`).
+- **Guest CRM:** one profile per restaurant, merged by diner account, phone or email. It tracks visits, spend, no-shows, rule-based tags (Regular, High spender, Allergy), VIP status and notes, and can be exported as CSV.
+- **Loyalty:** 100 points per completed network booking. Gold status after 6 completed bookings in 12 months.
+
+## Feature map
+
+| Area | Diner app | Restaurant app | API |
+| --- | --- | --- | --- |
+| Search & discovery | Search by text, cuisine, sort, location; bookable times on each result | — | `GET /discovery/search`, `/discovery/restaurants/:slug` |
+| Booking | Slot picker by seating area and service period, checkout with hold timer, policy acceptance, card or deposit, confirmation and share | Phone bookings, walk-ins, overbook override | `POST /restaurants/:id/holds`, `/holds/:id/confirm` |
+| Large parties | Request flow | Approve or decline and assign tables | `/restaurants/:id/requests`, `/manage/:rid/reservations/:id/approve` |
+| Manage booking | Modify, cancel (late-fee warning), directions, call | Modify, cancel, no-show, waive fee, history | `/me/reservations/*`, `/manage/:rid/reservations/*` |
+| Notify | Set and remove alerts; deep link from the alert | See demand | `/restaurants/:id/notify`, `/me/notify` |
+| Waitlist | Remote join, live position | Quoted waits, table-ready SMS, seat, remove | `/restaurants/:id/waitlist`, `/manage/:rid/waitlist` |
+| Floor & tables | — | Live floor plan, course status, best-fit suggestions, seat by click, block table, drag-and-drop floor editor | `/manage/:rid/floor`, `/tables/:id/status`, `/suggest-tables` |
+| CRM | Dining preferences | Guestbook, tags, VIP, allergies, notes, history, CSV export | `/manage/:rid/guests` |
+| Payments | Saved cards (tokens only), deposits | Waive fees | Mock provider behind a `PaymentProvider` interface |
+| Reviews | Verified reviews after a completed visit | Reply, flag | `/me/reservations/:id/review`, `/manage/:rid/reviews` |
+| Loyalty | Points, Gold progress, saved restaurants | — | `/me/loyalty` |
+| Settings | — | Profile, booking rules, shifts and pacing, rooms and tables, turn times, versioned policies, closures, staff roles, online-booking kill switch | `/manage/:rid/settings/*` |
+| Reports | — | Pre-shift report, covers, no-show rate, turn times, spend per cover, channel mix, waitlist and Notify conversion, billing, CSV export | `/manage/:rid/reports/*` |
+| Admin | — | — | Onboarding, status and plan, users, review moderation, payments and dispute evidence, audited impersonation, audit log |
+| Privacy | Export and delete account | — | `GET/DELETE /me` |
+
+## What to plug in before production
+
+These are working stubs behind clean interfaces:
+
+- **Payments:** `MockPaymentProvider` (`apps/api/src/payments/provider.ts`). Add a Stripe or Adyen adapter, and replace `tokenize()` in `apps/mobile/src/screens/AddCardScreen.tsx` with the provider's card SDK.
+- **SMS, email and push delivery:** messages go to the `message_outbox` table. Set `MESSAGING_PROVIDER` and add a worker for Twilio, SES or Expo Push.
+- **Event bus:** in-process today. Swap `EventBus` (`apps/api/src/common/events.ts`) for Redis Streams or Kafka before running more than one API instance, so real-time events and Notify reach every node.
+- **Not built in this MVP:** the "should have" and "could have" items in the spec. That covers the AI concierge, email campaigns and segments, prepaid ticketed experiences, gift cards and dining credits, paid search placement, POS integrations, the public partner API with OAuth and webhooks, SSO, and an embeddable web widget for restaurant websites. The data model and channel tags already leave room for them.
+
+## Repository layout
+
+```
+apps/api/src
+  availability/   engine + service + public availability endpoint
+  bookings/       holds, confirm, modify, cancel, seat, complete, no-show
+  notify/ waitlist/ crm/ payments/ reviews/ discovery/ diners/
+  host/           host stand + guestbook endpoints (/manage/:rid)
+  settings/ reports/ admin/ realtime/ jobs/ auth/ messaging/ db/
+apps/api/drizzle  SQL migrations
+apps/api/test     engine unit tests + e2e tests
+apps/restaurant   Next.js host stand & back office
+apps/admin        Next.js admin console
+apps/mobile       Expo diner app
+```
