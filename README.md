@@ -35,9 +35,16 @@ eas build --profile preview --platform ios       # needs an Apple Developer acco
 ```
 `eas submit` uploads production builds to the App Store and Google Play.
 
-## Google reviews and photos (optional)
+## Google search, reviews and photos (optional)
 
-Restaurants can link their Google listing. The diner app then shows the Google rating, up to 5 Google reviews and the Google photos alongside TableDash's own reviews.
+With a Google key set, the diner app's search covers **every restaurant on Google**, not just TableDash ones:
+
+- Each result shows Google's photo, rating, cuisine, price and address.
+- Restaurants on TableDash (matched by their linked Google listing) are marked **Book on TableDash** and show bookable times. The **Bookable on TableDash** filter shows only those.
+- Other restaurants open a details page with Google photos, reviews, hours, phone, website and directions, plus **Tell me when they join**. Those requests appear in the admin console under **Requested restaurants**, a sales lead list. When that restaurant joins and links its Google listing, everyone who asked is notified automatically.
+- Without a key, or without a location or search text, search shows TableDash restaurants only.
+
+Restaurant pages on TableDash also show the Google rating, up to 5 Google reviews and Google photos alongside TableDash's own reviews.
 
 1. In [Google Cloud Console](https://console.cloud.google.com/), create a project, enable billing, and enable **Places API (New)**.
 2. Create an API key. Restrict it to **Places API (New)**. It's used only by the API server and never sent to apps.
@@ -49,7 +56,7 @@ How it complies with Google's Places API policies:
 - The API key stays on the server. Photos go through `GET /v1/discovery/google-photo`, which redirects to a short-lived Google URL.
 - The diner app shows the **"Google Maps"** text attribution in the same container as the content, credits review and photo authors (avatar, name, profile link), links every review and photo to Google Maps, discloses translations with access to the original text, and states how reviews are ordered.
 
-**Cost:** each restaurant page view makes a billable Place Details request (rating and reviews are in Google's higher-priced tier), plus one Place Photo request per Google photo shown. Check Google's current pricing and set a budget alert in Google Cloud.
+**Cost:** each diner search makes a billable Text Search request (rating and photo fields put it in Google's Enterprise tier), plus one Place Photo request per result photo shown. Each restaurant page view makes a billable Place Details request (rating and reviews are in Google's higher-priced tier), plus one Place Photo request per Google photo shown. Check Google's current pricing and set a budget alert in Google Cloud.
 
 ## Deploy a test environment (Render, free tier)
 

@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
 import { AdminController } from './admin.controller';
-@Module({ controllers: [AdminController] })
+import { GoogleModule } from '../google/google.module';
+@Module({ imports: [GoogleModule], controllers: [AdminController] })
 export class AdminModule {}

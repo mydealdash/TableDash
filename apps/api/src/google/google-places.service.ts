@@ -12,6 +12,13 @@ import { BadGatewayException, BadRequestException, Injectable, Logger, ServiceUn
 const BASE = process.env.GOOGLE_PLACES_BASE_URL ?? 'https://places.googleapis.com/v1'; // override only for local testing
 const DETAILS_FIELDS = ['id', 'displayName', 'rating', 'userRatingCount', 'googleMapsUri', 'reviews', 'photos'].join(',');
 const SEARCH_FIELDS = ['places.id', 'places.displayName', 'places.formattedAddress', 'places.rating', 'places.userRatingCount', 'places.googleMapsUri'].join(',');
+// Diner search: enough to render a result card (one thumbnail photo).
+const DINER_SEARCH_FIELDS = ['places.id', 'places.displayName', 'places.formattedAddress', 'places.shortFormattedAddress', 'places.location', 'places.rating',
+  'places.userRatingCount', 'places.priceLevel', 'places.primaryTypeDisplayName', 'places.photos', 'places.googleMapsUri', 'places.businessStatus', 'nextPageToken'].join(',');
+// Full page for a restaurant that isn't on TableDash yet.
+const PLACE_FIELDS = ['id', 'displayName', 'formattedAddress', 'location', 'rating', 'userRatingCount', 'priceLevel', 'primaryTypeDisplayName',
+  'nationalPhoneNumber', 'internationalPhoneNumber', 'websiteUri', 'regularOpeningHours', 'googleMapsUri', 'reviews', 'photos', 'businessStatus', 'editorialSummary'].join(',');
+const PRICE: Record<string, number> = { PRICE_LEVEL_INEXPENSIVE: 1, PRICE_LEVEL_MODERATE: 2, PRICE_LEVEL_EXPENSIVE: 3, PRICE_LEVEL_VERY_EXPENSIVE: 4 };
 export const PHOTO_NAME = /^places\/[A-Za-z0-9_-]+\/photos\/[A-Za-z0-9_-]+$/;
 
 export interface GoogleAuthor { name: string; uri: string | null; photoUri: string | null }
@@ -63,9 +70,60 @@ export class GooglePlacesService {
     }));
   }
 
+  /**
+   * Diner-facing restaurant search (Text Search). Results are shown live and never stored;
+   * TableDash matches them to registered restaurants by place ID only.
+   */
+  async searchRestaurants(input: { query: string; near?: { lat: number; lng: number } | null; pageToken?: string; languageCode?: string }) {
+    const body: any = { textQuery: input.query, includedType: 'restaurant', pageSize: 20, languageCode: input.languageCode ?? 'en' };
+    if (input.near) body.locationBias = { circle: { center: { latitude: input.near.lat, longitude: input.near.lng }, radius: 8000 } };
+    if (input.pageToken) body.pageToken = input.pageToken;
+    const data = await this.call(`${BASE}/places:searchText`, { method: 'POST', body: JSON.stringify(body), fieldMask: DINER_SEARCH_FIELDS });
+    return {
+      nextPageToken: (data.nextPageToken as string | undefined) ?? null,
+      places: (data.places ?? []).filter((p: any) => p.businessStatus !== 'CLOSED_PERMANENTLY').map((p: any) => ({
+        placeId: p.id as string,
+        name: p.displayName?.text ?? '',
+        address: p.shortFormattedAddress ?? p.formattedAddress ?? '',
+        lat: p.location?.latitude ?? null, lng: p.location?.longitude ?? null,
+        rating: p.rating ?? null, userRatingCount: p.userRatingCount ?? null,
+        priceBand: PRICE[p.priceLevel] ?? null, type: p.primaryTypeDisplayName?.text ?? null,
+        temporarilyClosed: p.businessStatus === 'CLOSED_TEMPORARILY',
+        googleMapsUri: p.googleMapsUri ?? null,
+        photo: p.photos?.[0] ? { name: p.photos[0].name as string, authors: (p.photos[0].authorAttributions ?? []).map(author) } : null,
+      })),
+    };
+  }
+
+  /** Full details for a restaurant page (unregistered places). Never stored. */
+  async place(placeId: string, languageCode = 'en') {
+    const p = await this.call(`${BASE}/places/${encodeURIComponent(placeId)}?languageCode=${encodeURIComponent(languageCode)}`, { fieldMask: PLACE_FIELDS });
+    const listing = this.toListing(p, placeId);
+    return {
+      ...listing,
+      name: p.displayName?.text ?? '',
+      address: p.formattedAddress ?? '',
+      lat: p.location?.latitude ?? null, lng: p.location?.longitude ?? null,
+      priceBand: PRICE[p.priceLevel] ?? null, type: p.primaryTypeDisplayName?.text ?? null,
+      phone: p.nationalPhoneNumber ?? p.internationalPhoneNumber ?? null, phoneIntl: p.internationalPhoneNumber ?? null,
+      website: p.websiteUri ?? null, hours: p.regularOpeningHours?.weekdayDescriptions ?? [], openNow: p.regularOpeningHours?.openNow ?? null,
+      summary: p.editorialSummary?.text ?? null, businessStatus: p.businessStatus ?? null,
+    };
+  }
+
+  /** Name and address only (cheapest details request) for admin views. */
+  async basic(placeId: string) {
+    const p = await this.call(`${BASE}/places/${encodeURIComponent(placeId)}`, { fieldMask: 'id,displayName,formattedAddress,googleMapsUri' });
+    return { placeId, name: p.displayName?.text ?? '', address: p.formattedAddress ?? '', googleMapsUri: p.googleMapsUri ?? null };
+  }
+
   /** Live listing content for display (never persisted). */
   async listing(placeId: string, languageCode = 'en'): Promise<GoogleListing> {
     const p = await this.call(`${BASE}/places/${encodeURIComponent(placeId)}?languageCode=${encodeURIComponent(languageCode)}`, { fieldMask: DETAILS_FIELDS });
+    return this.toListing(p, placeId);
+  }
+
+  private toListing(p: any, placeId: string): GoogleListing {
     return {
       enabled: true,
       placeId: p.id ?? placeId,

@@ -367,6 +367,15 @@ export const savedRestaurants = pgTable('saved_restaurants', {
   createdAt: createdAt(),
 }, (t) => ({ pk: primaryKey({ columns: [t.userId, t.restaurantId] }) }));
 
+// Diners asking for a restaurant that isn't on TableDash yet (only Google's place ID is stored).
+export const placeInterests = pgTable('place_interests', {
+  id: id(),
+  googlePlaceId: text('google_place_id').notNull(),
+  dinerId: text('diner_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  notifiedAt: timestamp('notified_at', { withTimezone: true }),
+  createdAt: createdAt(),
+}, (t) => ({ uq: uniqueIndex('place_interest_uq').on(t.googlePlaceId, t.dinerId), idx: index('place_interest_place_idx').on(t.googlePlaceId) }));
+
 // ---------- Messaging outbox, audit, billing ----------
 export const messageOutbox = pgTable('message_outbox', {
   id: id(),

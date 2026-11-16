@@ -4,7 +4,9 @@ import { eq, or } from 'drizzle-orm';
 import type { Response } from 'express';
 import { MANAGERS, Public, StaffRoles, AuthUser, CurrentUser } from '../auth/auth.guard';
 import { DB, Db } from '../db/db.module';
-import { restaurants } from '../db/schema';
+import { placeInterests, restaurants, users } from '../db/schema';
+import { MessagingService } from '../messaging/messaging.service';
+import { and, isNull } from 'drizzle-orm';
 import { AuditService } from '../common/audit.service';
 import { GooglePlacesService } from './google-places.service';
 
@@ -12,7 +14,7 @@ class LinkDto { @IsOptional() @IsString() @Matches(/^[A-Za-z0-9_-]{10,300}$/) pl
 
 @Controller()
 export class GoogleController {
-  constructor(@Inject(DB) private readonly db: Db, private readonly google: GooglePlacesService, private readonly audit: AuditService) {}
+  constructor(@Inject(DB) private readonly db: Db, private readonly google: GooglePlacesService, private readonly audit: AuditService, private readonly messaging: MessagingService) {}
 
   /** Diner-facing: live Google rating, reviews and photos for a linked restaurant. */
   @Public() @Get('discovery/restaurants/:key/google')
@@ -53,6 +55,22 @@ export class GoogleController {
   async link(@Param('rid') rid: string, @Body() dto: LinkDto, @CurrentUser() u: AuthUser) {
     await this.db.update(restaurants).set({ googlePlaceId: dto.placeId ?? null }).where(eq(restaurants.id, rid));
     await this.audit.log({ actorId: u.id, restaurantId: rid, action: dto.placeId ? 'google_linked' : 'google_unlinked', entity: 'restaurant', entityId: rid, data: { placeId: dto.placeId ?? null } });
-    return { placeId: dto.placeId ?? null };
+    const notified = dto.placeId ? await this.notifyInterested(rid, dto.placeId) : 0;
+    return { placeId: dto.placeId ?? null, notified };
+  }
+
+  /** Diners who tapped "Tell me when they join" hear about it once the restaurant is live and linked. */
+  private async notifyInterested(rid: string, placeId: string) {
+    const [r] = await this.db.select().from(restaurants).where(eq(restaurants.id, rid));
+    if (!r || r.status !== 'LIVE') return 0;
+    const waiting = await this.db.select({ i: placeInterests, email: users.email }).from(placeInterests).innerJoin(users, eq(users.id, placeInterests.dinerId))
+      .where(and(eq(placeInterests.googlePlaceId, placeId), isNull(placeInterests.notifiedAt)));
+    for (const w of waiting) {
+      const body = `${r.name} is now on TableDash. Book a table: tabledash://restaurant/${r.slug}`;
+      await this.messaging.send('PUSH', w.i.dinerId, 'place_joined', body);
+      await this.messaging.send('EMAIL', w.email, 'place_joined', body);
+      await this.db.update(placeInterests).set({ notifiedAt: new Date() }).where(eq(placeInterests.id, w.i.id));
+    }
+    return waiting.length;
   }
 }

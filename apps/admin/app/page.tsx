@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api, clearSession, getToken, money } from '@/lib/api';
 
-const TABS = ['Overview', 'Restaurants', 'Users', 'Reviews', 'Payments & disputes', 'Audit log'] as const;
+const TABS = ['Overview', 'Restaurants', 'Requested restaurants', 'Users', 'Reviews', 'Payments & disputes', 'Audit log'] as const;
 type Tab = (typeof TABS)[number];
 const RAW_RA = process.env.NEXT_PUBLIC_RESTAURANT_APP_URL ?? 'http://localhost:3001';
 const RESTAURANT_APP = RAW_RA.startsWith('http') ? RAW_RA : `https://${RAW_RA}`;
@@ -24,6 +24,7 @@ export default function Admin() {
       <main className="main">
         {tab === 'Overview' && <Overview />}
         {tab === 'Restaurants' && <Restaurants />}
+        {tab === 'Requested restaurants' && <Demand />}
         {tab === 'Users' && <Users />}
         {tab === 'Reviews' && <Reviews />}
         {tab === 'Payments & disputes' && <Payments />}
@@ -193,5 +194,25 @@ function Audit() {
       <table className="list"><thead><tr><th>When</th><th>Action</th><th>Entity</th><th>Actor</th><th>Restaurant</th></tr></thead>
         <tbody>{rows.map((a) => <tr key={a.id}><td className="small">{new Date(a.createdAt).toLocaleString()}</td><td>{a.action}</td><td>{a.entity}</td>
           <td className="small muted">{a.actorId?.slice(0, 8)}</td><td className="small muted">{a.restaurantId?.slice(0, 8)}</td></tr>)}</tbody></table></div>
+  );
+}
+
+/** Restaurants diners asked for with "Tell me when they join": a sales lead list. */
+function Demand() {
+  const [rows, setRows] = useState<any[] | null>(null);
+  useEffect(() => { api('/admin/place-demand').then(setRows).catch(() => setRows([])); }, []);
+  return (
+    <div style={{ maxWidth: 900 }}>
+      <h1>Requested restaurants</h1>
+      <p className="muted">Restaurants diners found through Google search and asked to book. When one signs up and links its Google listing, everyone who asked is notified automatically.</p>
+      <table className="list"><thead><tr><th>Restaurant</th><th>Address</th><th>Diner requests</th><th>Status</th><th></th></tr></thead>
+        <tbody>{(rows ?? []).map((r) => (
+          <tr key={r.placeId}><td><b>{r.name ?? r.placeId}</b></td><td className="small">{r.address ?? '—'}</td><td>{r.requests}</td>
+            <td>{r.onTableDash ? <span className="badge COMPLETED">On TableDash</span> : <span className="badge REQUESTED">Lead</span>}</td>
+            <td>{r.googleMapsUri && <a className="btn sm" href={r.googleMapsUri} target="_blank" rel="noreferrer">Google Maps</a>}</td></tr>
+        ))}
+        {rows && rows.length === 0 && <tr><td colSpan={5} className="muted">No requests yet.</td></tr>}</tbody></table>
+      <p className="small muted">Names and addresses are loaded live from <span translate="no">Google Maps</span>.</p>
+    </div>
   );
 }

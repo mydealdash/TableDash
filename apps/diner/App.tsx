@@ -18,6 +18,7 @@ import AccountScreen from './src/screens/AccountScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import AddCardScreen from './src/screens/AddCardScreen';
 import WaitlistScreen from './src/screens/WaitlistScreen';
+import PlaceScreen from './src/screens/PlaceScreen';
 
 export type RootStack = {
   Tabs: undefined;
@@ -28,6 +29,7 @@ export type RootStack = {
   Login: { reason?: string };
   AddCard: {};
   Waitlist: { restaurantId: string; name: string };
+  Place: { placeId: string; name?: string };
 };
 
 const Stack = createNativeStackNavigator<RootStack>();
@@ -65,6 +67,7 @@ function Root() {
         <Stack.Screen name="Login" component={LoginScreen} options={{ title: 'Sign in', presentation: 'modal' }} />
         <Stack.Screen name="AddCard" component={AddCardScreen} options={{ title: 'Add a card', presentation: 'modal' }} />
         <Stack.Screen name="Waitlist" component={WaitlistScreen} options={{ title: 'Waitlist' }} />
+        <Stack.Screen name="Place" component={PlaceScreen} options={{ title: '' }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

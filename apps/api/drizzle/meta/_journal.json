@@ -15,6 +15,13 @@
       "when": 1794827567582,
       "tag": "0001_google_place_id",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794831524174,
+      "tag": "0002_place_interests",
+      "breakpoints": true
     }
   ]
 }

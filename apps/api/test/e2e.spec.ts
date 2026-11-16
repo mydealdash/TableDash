@@ -263,13 +263,26 @@ describe('Admin and settings', () => {
 
 describe('Google listing: live rating, reviews and photos', () => {
   const PLACE = 'ChIJTestPlaceId1234567890';
+  const OTHER = 'ChIJOtherNoodleBar123456';
   const calls: { url: string; headers: any }[] = [];
   beforeAll(() => {
     jest.spyOn(global, 'fetch').mockImplementation(async (input: any, init?: any) => {
       const url = String(input);
       calls.push({ url, headers: init?.headers ?? {} });
       const json = (b: unknown) => new Response(JSON.stringify(b), { status: 200, headers: { 'Content-Type': 'application/json' } });
-      if (url.endsWith('places:searchText')) return json({ places: [{ id: PLACE, displayName: { text: 'Osteria Lume' }, formattedAddress: '212 Court St, Brooklyn', rating: 4.6, userRatingCount: 812, googleMapsUri: 'https://maps.google.com/?cid=1' }] });
+      if (url.endsWith('places:searchText')) {
+        const body = JSON.parse(init.body);
+        if (init.headers['X-Goog-FieldMask'].includes('nextPageToken')) return json({ nextPageToken: 'page2', places: [
+          { id: PLACE, displayName: { text: 'Osteria Lume' }, shortFormattedAddress: '212 Court St', location: { latitude: 40.6831, longitude: -73.9944 }, rating: 4.6, userRatingCount: 812,
+            priceLevel: 'PRICE_LEVEL_MODERATE', primaryTypeDisplayName: { text: 'Italian Restaurant' }, photos: [{ name: `places/${PLACE}/photos/AbCdEf123`, authorAttributions: [] }], businessStatus: 'OPERATIONAL' },
+          { id: OTHER, displayName: { text: 'Real Noodle Bar' }, shortFormattedAddress: '5 Main St', location: { latitude: 40.69, longitude: -73.99 }, rating: 4.3, userRatingCount: 120,
+            priceLevel: 'PRICE_LEVEL_INEXPENSIVE', primaryTypeDisplayName: { text: 'Ramen Restaurant' }, businessStatus: 'OPERATIONAL' },
+          { id: 'ChIJclosedPlace0000000', displayName: { text: 'Gone Cafe' }, businessStatus: 'CLOSED_PERMANENTLY' },
+        ], _q: body.textQuery });
+        return json({ places: [{ id: PLACE, displayName: { text: 'Osteria Lume' }, formattedAddress: '212 Court St, Brooklyn', rating: 4.6, userRatingCount: 812, googleMapsUri: 'https://maps.google.com/?cid=1' }] });
+      }
+      if (url.includes(`/places/${OTHER}`)) return json({ id: OTHER, displayName: { text: 'Real Noodle Bar' }, formattedAddress: '5 Main St, Brooklyn, NY', nationalPhoneNumber: '(718) 555-0199',
+        websiteUri: 'https://noodles.example', regularOpeningHours: { openNow: true, weekdayDescriptions: ['Monday: 11:00 AM – 10:00 PM'] }, rating: 4.3, userRatingCount: 120, reviews: [], photos: [] });
       if (url.includes(`/places/${PLACE}?`)) return json({
         id: PLACE, rating: 4.6, userRatingCount: 812, googleMapsUri: 'https://maps.google.com/?cid=1',
         reviews: [{ rating: 5, relativePublishTimeDescription: '2 weeks ago', publishTime: '2026-11-01T19:00:00Z',
@@ -312,6 +325,43 @@ describe('Google listing: live rating, reviews and photos', () => {
     const res = await http().get('/v1/discovery/google-photo').query({ name: `places/${PLACE}/photos/AbCdEf123`, w: 800 }).expect(302);
     expect(res.headers.location).toBe('https://lh3.googleusercontent.com/places/photo123');
     await http().get('/v1/discovery/google-photo').query({ name: '../../evil' }).expect(400);
+  });
+
+  it('diner search returns Google results, with bookable times only for TableDash restaurants', async () => {
+    const res = await http().get('/v1/discovery/places-search').query({ q: 'italian', lat: 40.68, lng: -73.99, date, time: '19:00', party: 2 }).expect(200);
+    expect(res.body.source).toBe('google');
+    expect(res.body.nextPageToken).toBe('page2');
+    const names = res.body.results.map((r: any) => r.name);
+    expect(names).not.toContain('Gone Cafe'); // permanently closed places are hidden
+    const lume = res.body.results.find((r: any) => r.placeId === PLACE);
+    expect(lume).toMatchObject({ rating: 4.6, priceBand: 2, type: 'Italian Restaurant', photo: { name: `places/${PLACE}/photos/AbCdEf123` } });
+    expect(lume.tabledash.slug).toBe('osteria-lume');
+    expect(lume.tabledash.slots.length).toBeGreaterThan(0);
+    const noodle = res.body.results.find((r: any) => r.placeId === OTHER);
+    expect(noodle.tabledash).toBeNull();
+    expect(noodle.distanceKm).toBeGreaterThan(0);
+    // Without text or location it falls back to TableDash's own search.
+    expect((await http().get('/v1/discovery/places-search').expect(200)).body.source).toBe('tabledash');
+  });
+
+  it('unregistered place page, "tell me when they join", and alert when it joins', async () => {
+    const diner = await login('diner@tabledash.dev');
+    const page = await http().get(`/v1/discovery/places/${OTHER}`).set(auth(diner)).expect(200);
+    expect(page.body).toMatchObject({ name: 'Real Noodle Bar', phone: '(718) 555-0199', website: 'https://noodles.example', tabledash: null, interested: false });
+    await http().post(`/v1/discovery/places/${OTHER}/interest`).set(auth(diner)).expect(201);
+    expect((await http().get(`/v1/discovery/places/${OTHER}`).set(auth(diner)).expect(200)).body.interested).toBe(true);
+    await http().post(`/v1/discovery/places/${OTHER}/interest`).expect(401); // sign-in required
+    const admin = await login('admin@tabledash.dev');
+    const demand = await http().get('/v1/admin/place-demand').set(auth(admin)).expect(200);
+    expect(demand.body[0]).toMatchObject({ placeId: OTHER, requests: 1, onTableDash: false, name: 'Real Noodle Bar' });
+    // The restaurant joins and links its listing → the diner is alerted.
+    const owner = await login('owner+saffron-and-salt@tabledash.dev');
+    const link = await http().put(`/v1/manage/${ids['saffron-and-salt']}/settings/google`).set(auth(owner)).send({ placeId: OTHER }).expect(200);
+    expect(link.body.notified).toBe(1);
+    const msg = (await pool.query(`select body from message_outbox where template = 'place_joined' order by created_at desc limit 1`)).rows[0];
+    expect(msg.body).toContain('Saffron & Salt is now on TableDash');
+    expect((await http().get(`/v1/discovery/places/${OTHER}`).expect(200)).body.tabledash.slug).toBe('saffron-and-salt');
+    await http().put(`/v1/manage/${ids['saffron-and-salt']}/settings/google`).set(auth(owner)).send({ placeId: null }).expect(200);
   });
 
   it('unlinking turns Google content off', async () => {

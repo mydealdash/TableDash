@@ -11,6 +11,8 @@ import {
 } from '../db/schema';
 import { AuditService } from '../common/audit.service';
 import { recomputeRating } from '../reviews/reviews.controller';
+import { GooglePlacesService } from '../google/google-places.service';
+import { placeInterests } from '../db/schema';
 
 class OnboardDto {
   @IsString() name: string;
@@ -35,7 +37,7 @@ class DisputeDto { @IsIn(['DISPUTED', 'REFUNDED']) status: 'DISPUTED' | 'REFUNDE
 @AdminOnly()
 @Controller('admin')
 export class AdminController {
-  constructor(@Inject(DB) private readonly db: Db, private readonly audit: AuditService, private readonly jwt: JwtService) {}
+  constructor(@Inject(DB) private readonly db: Db, private readonly audit: AuditService, private readonly jwt: JwtService, private readonly google: GooglePlacesService) {}
 
   @Get('stats') async stats() {
     const since = new Date(Date.now() - 30 * 86400000);
@@ -150,6 +152,17 @@ export class AdminController {
     if (!p) throw new NotFoundException();
     await this.audit.log({ actorId: u.id, action: `payment_${dto.status.toLowerCase()}`, entity: 'payment', entityId: id, data: dto });
     return p;
+  }
+
+  /** Restaurants diners asked for that aren't on TableDash yet: a sales lead list. Names are fetched live from Google. */
+  @Get('place-demand') async demand() {
+    const rows = await this.db.select({ placeId: placeInterests.googlePlaceId, requests: count() }).from(placeInterests)
+      .groupBy(placeInterests.googlePlaceId).orderBy(desc(count())).limit(25);
+    const linked = new Set((await this.db.select({ p: restaurants.googlePlaceId }).from(restaurants)).map((x) => x.p).filter(Boolean));
+    return Promise.all(rows.map(async (r) => ({
+      ...r, onTableDash: linked.has(r.placeId),
+      ...(this.google.configured ? await this.google.basic(r.placeId).catch(() => ({ name: null, address: null, googleMapsUri: null })) : { name: null, address: null, googleMapsUri: null }),
+    })));
   }
 
   @Get('audit') audit_(@Query('restaurantId') rid?: string) {
