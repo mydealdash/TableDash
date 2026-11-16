@@ -19,8 +19,9 @@ export default function HostScreen() {
   useKeepAwake();
   const { restaurant, refreshRestaurant, can } = useSession();
   const rid = restaurant!.id, tz = restaurant!.timezone;
-  const { width } = useWindowDimensions();
-  const wide = width >= 900;
+  const win = useWindowDimensions();
+  const [width, setWidth] = useState(win.width);
+  const wide = width >= 820;
   const [date] = useState(() => todayIn(tz));
   const [floor, setFloor] = useState<any>(null);
   const [book, setBook] = useState<any[]>([]);
@@ -135,7 +136,7 @@ export default function HostScreen() {
   );
 
   return (
-    <View style={[s.screen, { padding: 12 }]}>
+    <View style={[s.screen, { padding: 12 }]} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
       <View style={[s.row, { justifyContent: 'space-between', flexWrap: 'wrap', marginBottom: 8 }]}>
         <View>
           <Text style={s.h1}>{restaurant!.name}</Text>

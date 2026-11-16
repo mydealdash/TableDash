@@ -4,6 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StatusBar } from 'expo-status-bar';
 import { Text } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { DeviceFrame } from './src/components/DeviceFrame';
 import { SessionProvider, useSession } from './src/lib/session';
 import { C } from './src/lib/theme';
 import { Loading } from './src/components/ui';
@@ -48,5 +49,5 @@ function Root() {
 }
 
 export default function App() {
-  return <SafeAreaProvider><SessionProvider><StatusBar style="dark" /><Root /></SessionProvider></SafeAreaProvider>;
+  return <DeviceFrame background="#f4f2ee"><SafeAreaProvider><SessionProvider><StatusBar style="dark" /><Root /></SessionProvider></SafeAreaProvider></DeviceFrame>;
 }

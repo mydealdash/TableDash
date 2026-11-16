@@ -1,4 +1,4 @@
-import { ActivityIndicator, Modal, Pressable, ScrollView, Text, View, ViewStyle } from 'react-native';
+import { ActivityIndicator, Modal, Platform, Pressable, ScrollView, Text, View, ViewStyle } from 'react-native';
 import { C, s } from '../lib/theme';
 
 export function Btn({ title, onPress, kind = 'ghost', small, disabled, loading, style }: {
@@ -27,6 +27,19 @@ export function Badge({ text, color = C.muted }: { text: string; color?: string 
   return <View style={{ borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2, backgroundColor: color + '1F', alignSelf: 'flex-start' }}><Text style={{ color, fontSize: 11, fontWeight: '800' }}>{text}</Text></View>;
 }
 export function Sheet({ visible, title, onClose, children }: { visible: boolean; title: string; onClose: () => void; children: React.ReactNode }) {
+  if (Platform.OS === 'web') {
+    // Inside the web device frame: an overlay within the app, like a native sheet.
+    if (!visible) return null;
+    return (
+      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#0006', justifyContent: 'flex-end', zIndex: 100 }}>
+        <Pressable style={{ flex: 1 }} onPress={onClose} />
+        <View style={{ backgroundColor: C.bg, borderTopLeftRadius: 18, borderTopRightRadius: 18, maxHeight: '88%', width: '100%', maxWidth: 640, alignSelf: 'center' }}>
+          <View style={[s.row, { justifyContent: 'space-between', padding: 16, paddingBottom: 6 }]}><Text style={s.h2}>{title}</Text><Btn small title="Close" onPress={onClose} /></View>
+          <ScrollView contentContainerStyle={{ padding: 16, paddingTop: 4, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">{children}</ScrollView>
+        </View>
+      </View>
+    );
+  }
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <View style={{ flex: 1, backgroundColor: '#0006', justifyContent: 'flex-end' }}>

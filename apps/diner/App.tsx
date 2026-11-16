@@ -4,6 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StatusBar } from 'expo-status-bar';
 import { Text } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { DeviceFrame } from './src/components/DeviceFrame';
 import { AuthProvider, useAuth } from './src/lib/auth';
 import { C } from './src/lib/theme';
 import { Loading } from './src/components/ui';
@@ -75,11 +76,13 @@ function Root() {
 
 export default function App() {
   return (
-    <SafeAreaProvider>
-      <AuthProvider>
-        <StatusBar style="dark" />
-        <Root />
-      </AuthProvider>
-    </SafeAreaProvider>
+    <DeviceFrame background="#faf8f5">
+      <SafeAreaProvider>
+        <AuthProvider>
+          <StatusBar style="dark" />
+          <Root />
+        </AuthProvider>
+      </SafeAreaProvider>
+    </DeviceFrame>
   );
 }

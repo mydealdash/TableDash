@@ -36,10 +36,11 @@ export function GoogleRatingLine({ g }: { g: GListing }) {
 
 /** Photo gallery: TableDash photos first, then Google photos, each Google photo credited to its author. */
 export function PhotoGallery({ own, google }: { own: string[]; google?: GListing | null }) {
-  const { width } = useWindowDimensions();
+  const win = useWindowDimensions();
+  const [width, setWidth] = useState(Math.min(win.width, 430));
   const gphotos = google?.enabled ? google.photos : [];
   return (
-    <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false}>
+    <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
       {own.map((p) => <Image key={p} source={{ uri: p }} style={{ width, height: 240, backgroundColor: C.line }} />)}
       {gphotos.map((p) => {
         const a = p.authors[0];
