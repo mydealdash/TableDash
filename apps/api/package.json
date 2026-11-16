@@ -9,7 +9,8 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "ts-node src/db/migrate.ts",
     "seed": "ts-node src/db/seed.ts",
-    "test": "jest --runInBand"
+    "test": "jest --runInBand",
+    "start:prod": "ts-node src/db/migrate.ts && SEED_IF_EMPTY=true ts-node src/db/seed.ts && node dist/main.js"
   },
   "jest": {
     "moduleFileExtensions": [

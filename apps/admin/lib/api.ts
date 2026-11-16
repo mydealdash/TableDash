@@ -1,5 +1,6 @@
 'use client';
-export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
+const RAW_API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
+export const API_URL = RAW_API.startsWith('http') ? RAW_API : `https://${RAW_API}`;
 
 export class ApiError extends Error {
   constructor(public status: number, message: string, public body?: any) { super(message); }

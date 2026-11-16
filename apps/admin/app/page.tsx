@@ -5,7 +5,8 @@ import { api, clearSession, getToken, money } from '@/lib/api';
 
 const TABS = ['Overview', 'Restaurants', 'Users', 'Reviews', 'Payments & disputes', 'Audit log'] as const;
 type Tab = (typeof TABS)[number];
-const RESTAURANT_APP = process.env.NEXT_PUBLIC_RESTAURANT_APP_URL ?? 'http://localhost:3001';
+const RAW_RA = process.env.NEXT_PUBLIC_RESTAURANT_APP_URL ?? 'http://localhost:3001';
+const RESTAURANT_APP = RAW_RA.startsWith('http') ? RAW_RA : `https://${RAW_RA}`;
 
 export default function Admin() {
   const router = useRouter();

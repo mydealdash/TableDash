@@ -1,13 +1,20 @@
 import Constants from 'expo-constants';
 import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
 
-export const API_URL: string = process.env.EXPO_PUBLIC_API_URL ?? (Constants.expoConfig?.extra as any)?.apiUrl ?? 'http://localhost:4000';
+// SecureStore is native-only; the web build (browser testing) uses localStorage.
+const store = Platform.OS === 'web'
+  ? { get: async (k: string) => localStorage.getItem(k), set: async (k: string, v: string) => localStorage.setItem(k, v), del: async (k: string) => localStorage.removeItem(k) }
+  : { get: (k: string) => SecureStore.getItemAsync(k), set: (k: string, v: string) => SecureStore.setItemAsync(k, v), del: (k: string) => SecureStore.deleteItemAsync(k) };
+
+const RAW_API: string = process.env.EXPO_PUBLIC_API_URL ?? (Constants.expoConfig?.extra as any)?.apiUrl ?? 'http://localhost:4000';
+export const API_URL = RAW_API.startsWith('http') ? RAW_API : `https://${RAW_API}`;
 let token: string | null = null;
 
-export async function loadToken() { token = await SecureStore.getItemAsync('td_token'); return token; }
+export async function loadToken() { token = await store.get('td_token'); return token; }
 export async function saveToken(t: string | null) {
   token = t;
-  if (t) await SecureStore.setItemAsync('td_token', t); else await SecureStore.deleteItemAsync('td_token');
+  if (t) await store.set('td_token', t); else await store.del('td_token');
 }
 export const hasToken = () => !!token;
 

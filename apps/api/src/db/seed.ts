@@ -57,6 +57,11 @@ const FLOOR: TableSpec[] = [
 async function main() {
   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
   const db = drizzle(pool, { schema: s });
+  // SEED_IF_EMPTY=true (used on hosted demos): seed only on a fresh database.
+  if (process.env.SEED_IF_EMPTY === 'true') {
+    const { rows } = await pool.query('select count(*)::int as n from restaurants');
+    if (rows[0].n > 0) { console.log('Database already has data; skipping seed'); await pool.end(); return; }
+  }
   await db.execute(sql`truncate users, restaurants, restaurant_groups, otp_codes, message_outbox, audit_logs, billable_covers cascade`);
   const hash = await bcrypt.hash('password123', 10);
 

@@ -11,6 +11,14 @@ Built from the *OpenTable & Resy — Functional Analysis and Functional Specific
 | Internal admin console | `apps/admin` | Next.js 14 | 3002 |
 | Diner mobile app (iOS / Android) | `apps/mobile` | Expo SDK 52, React Native 0.76 | — |
 
+## Deploy a test environment (Render, free tier)
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/mydealdash/TableDash)
+
+`render.yaml` creates five things: Postgres, the API, the restaurant app, the admin console, and a **web build of the diner app** for testing in a browser. On first start the API runs migrations and loads the demo data. Free services sleep after 15 minutes idle, so the first request after a pause takes about a minute. Render's free Postgres expires after 30 days.
+
+To test the diner app on a phone, run `cd apps/mobile && npm install && EXPO_PUBLIC_API_URL=https://<your-api>.onrender.com npx expo start` and scan the QR code with Expo Go.
+
 ## Quick start
 
 **Docker (API + web apps + Postgres):**
