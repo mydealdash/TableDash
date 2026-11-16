@@ -1,0 +1,14 @@
+{
+  "name": "tabledash",
+  "private": true,
+  "workspaces": ["apps/api", "apps/restaurant", "apps/admin"],
+  "scripts": {
+    "dev:api": "npm run start:dev -w apps/api",
+    "dev:restaurant": "npm run dev -w apps/restaurant",
+    "dev:admin": "npm run dev -w apps/admin",
+    "db:migrate": "npm run prisma:migrate -w apps/api",
+    "db:seed": "npm run seed -w apps/api",
+    "test": "npm test -w apps/api",
+    "build": "npm run build -w apps/api && npm run build -w apps/restaurant && npm run build -w apps/admin"
+  }
+}
