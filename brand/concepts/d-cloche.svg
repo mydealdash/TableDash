@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- D · Served fast: a serving dome (cloche) with speed dashes underneath -->
+  <rect width="1024" height="1024" rx="232" fill="#FF5A3C"/>
+  <circle cx="512" cy="300" r="40" fill="#FFFFFF"/>
+  <path d="M232 600c0-170 126-290 280-290s280 120 280 290z" fill="#FFFFFF"/>
+  <rect x="190" y="620" width="644" height="66" rx="33" fill="#FFFFFF"/>
+  <rect x="300" y="736" width="230" height="52" rx="26" fill="#19B394"/>
+  <rect x="566" y="736" width="110" height="52" rx="26" fill="#FFFFFF" opacity="0.75"/>
+  <path d="M360 520c18-70 70-120 140-136" fill="none" stroke="#FFE1D9" stroke-width="36" stroke-linecap="round"/>
+</svg>

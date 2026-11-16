@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- A · Pin & plate: a location pin whose head is a dinner plate, mint dot = table found -->
+  <rect width="1024" height="1024" rx="232" fill="#FF5A3C"/>
+  <path d="M512 196c-150 0-262 112-262 258 0 190 220 360 248 381a22 22 0 0 0 28 0c28-21 248-191 248-381 0-146-112-258-262-258z" fill="#FFFFFF"/>
+  <circle cx="512" cy="450" r="150" fill="#FFE6DF"/>
+  <circle cx="512" cy="450" r="104" fill="#FFFFFF" stroke="#FF5A3C" stroke-width="20"/>
+  <circle cx="512" cy="450" r="40" fill="#19B394"/>
+</svg>

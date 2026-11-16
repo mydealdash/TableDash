@@ -6,13 +6,13 @@
 
 | File | Use |
 | --- | --- |
-| `mark.svg` | Main logo mark: a table shaped like a "T", with speed dashes for "Dash". Coral tile. |
-| `mark-restaurant.svg` | Restaurant-side variant (navy tile, coral table), used for the restaurant app and back office. |
+| `mark.svg` | Main logo mark: a lowercase "td" monogram whose "d" is a plate (mint center). Navy tile. Used for the diner app. |
+| `mark-restaurant.svg` | Restaurant-side variant: coral tile, navy "d". Used for the restaurant app, and on navy backgrounds (web sidebars). |
 | `logo-wordmark.svg` / `.png` | Horizontal logo: mark + "Table" in navy and "Dash" in coral (Nunito Black). |
 | `mark-icon.svg`, `mark-foreground.svg` | Full-bleed app icon and Android adaptive-icon foreground (source for the PNGs in each app's `assets/`). |
 
-- Keep clear space around the mark equal to the height of one dash.
-- Don't recolor the mark outside the two versions above, stretch it, or put the coral tile on coral.
+- Keep clear space around the mark equal to the width of the "t" stem.
+- Don't recolor the mark outside the two versions above, stretch it, or put a tile on a background of the same color (navy on navy, coral on coral).
 - On dark backgrounds, use "Table" in white with "Dash" in coral.
 
 ## Colors

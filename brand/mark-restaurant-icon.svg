@@ -1,8 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
-  <rect width="1024" height="1024" fill="#14213D"/>
-  <rect x="372" y="300" width="440" height="104" rx="52" fill="#FF5A3C"/>
-  <rect x="540" y="300" width="104" height="440" rx="52" fill="#FF5A3C"/>
-  <rect x="212" y="300" width="120" height="104" rx="52" fill="#19B394"/>
-  <rect x="300" y="472" width="196" height="64" rx="32" fill="#FFFFFF" opacity="0.92"/>
-  <rect x="380" y="604" width="116" height="64" rx="32" fill="#19B394"/>
+  <!-- TableDash "td" monogram: the d is a plate. Original artwork. -->
+  <rect width="1024" height="1024" fill="#FF5A3C"/>
+  <g transform="translate(20 0)">
+    <rect x="236" y="250" width="92" height="470" rx="46" fill="#FFFFFF"/>
+    <rect x="168" y="372" width="250" height="84" rx="42" fill="#FFFFFF"/>
+    <circle cx="602" cy="590" r="168" fill="#14213D"/>
+    <circle cx="602" cy="590" r="92" fill="#FF5A3C"/>
+    <circle cx="602" cy="590" r="54" fill="#19B394"/>
+    <rect x="724" y="250" width="92" height="508" rx="46" fill="#14213D"/>
+  </g>
 </svg>

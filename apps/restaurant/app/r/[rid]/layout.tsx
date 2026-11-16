@@ -36,7 +36,7 @@ export default function RestaurantLayout({ children, params }: { children: React
     <Ctx.Provider value={{ rid: params.rid, ...meta, role, refreshMeta }}>
       <div className="shell">
         <nav className="side">
-          <div className="logo" style={{ padding: '4px 8px 18px', color: '#fff' }}><img src="/mark.svg" alt="" /><div>Table<span className="dash">Dash</span><small>for Restaurants</small></div></div>
+          <div className="logo" style={{ padding: '4px 8px 18px', color: '#fff' }}><img src="/mark-restaurant.svg" alt="" /><div>Table<span className="dash">Dash</span><small>for Restaurants</small></div></div>
           {memberships.length > 1 && (
             <select value={params.rid} onChange={(e) => router.push(`/r/${e.target.value}/${section ?? 'host'}`)}>
               {memberships.map((m) => <option key={m.restaurantId} value={m.restaurantId}>{m.name}</option>)}

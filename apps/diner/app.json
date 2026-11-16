@@ -20,7 +20,7 @@
       ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FF5A3C"
+        "backgroundColor": "#14213D"
       }
     },
     "plugins": [
@@ -41,7 +41,7 @@
       "favicon": "./assets/favicon.png",
       "name": "TableDash",
       "shortName": "TableDash",
-      "themeColor": "#FF5A3C",
+      "themeColor": "#14213D",
       "backgroundColor": "#FFFFFF"
     },
     "primaryColor": "#FF5A3C"
