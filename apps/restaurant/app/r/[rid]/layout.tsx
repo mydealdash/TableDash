@@ -17,8 +17,14 @@ export default function RestaurantLayout({ children, params }: { children: React
   const [meta, setMeta] = useState<{ name: string; timezone: string; onlineBookingEnabled: boolean } | null>(null);
   const [user, setUser] = useState<any>(null);
 
+  const [loadErr, setLoadErr] = useState('');
   const refreshMeta = useCallback(() => {
-    api(`/manage/${params.rid}/floor`).then((f) => setMeta(f.restaurant)).catch(() => router.replace('/login'));
+    setLoadErr('');
+    api(`/manage/${params.rid}/floor`).then((f) => setMeta(f.restaurant)).catch((e: any) => {
+      // Only a rejected login goes back to the login page; anything else is shown so it can be retried.
+      if (e?.status === 401 || e?.status === 403) { clearSession(); router.replace('/login'); }
+      else setLoadErr(e?.message || 'Could not load this restaurant.');
+    });
   }, [params.rid, router]);
 
   useEffect(() => {
@@ -28,7 +34,9 @@ export default function RestaurantLayout({ children, params }: { children: React
     refreshMeta();
   }, [params.rid, refreshMeta, router]);
 
-  if (!meta) return <div className="main muted">Loading…</div>;
+  if (!meta) return loadErr
+    ? <div className="main"><p>Couldn't open this restaurant: {loadErr}</p><button className="btn" onClick={refreshMeta}>Try again</button> <button className="btn" onClick={() => { clearSession(); router.replace('/login'); }}>Back to sign in</button></div>
+    : <div className="main muted">Loading… (the server may take up to a minute to wake up)</div>;
   const role = memberships.find((m) => m.restaurantId === params.rid)?.role ?? (user?.platformRole === 'ADMIN' ? 'ADMIN' : 'READ_ONLY');
   const section = path.split('/')[3];
 

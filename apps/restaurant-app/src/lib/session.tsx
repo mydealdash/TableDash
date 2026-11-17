@@ -35,17 +35,23 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
         const last = await store.get('tdr_restaurant');
         const rid = me.memberships.find((m: Membership) => m.restaurantId === last)?.restaurantId ?? me.memberships[0]?.restaurantId;
         if (rid) await load(rid, me.memberships, me.user);
-      } catch { setToken(null); await store.del('tdr_token'); }
+      } catch (e: any) {
+        if (e?.status === 401 || e?.status === 403) { setToken(null); await store.del('tdr_token'); }
+      }
     }
     setReady(true);
   })(); }, [load]);
 
   const signIn = async (email: string, password: string) => {
-    const res = await api('/auth/login', { body: { email, password } });
-    if (!res.memberships.length) throw new Error('This account is not linked to a restaurant.');
+    const res = await api('/auth/login', { body: { email, password }, timeoutMs: 90000 });
+    if (!res.memberships?.length) throw new Error('This account is not linked to a restaurant.');
     setToken(res.token); await store.set('tdr_token', res.token);
     setUser(res.user); setMemberships(res.memberships);
-    await load(res.memberships[0].restaurantId, res.memberships, res.user);
+    try {
+      await load(res.memberships[0].restaurantId, res.memberships, res.user);
+    } catch (e: any) {
+      throw new Error(`Signed in, but couldn't open ${res.memberships[0].name}: ${e.message}`);
+    }
   };
   const signOut = async () => { setToken(null); await store.del('tdr_token'); setUser(null); setMemberships([]); setRestaurant(null); };
   const selectRestaurant = (id: string) => load(id, memberships, user);

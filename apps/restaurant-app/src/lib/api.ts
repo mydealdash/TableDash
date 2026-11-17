@@ -15,12 +15,28 @@ export const getToken = () => token;
 
 export class ApiError extends Error { constructor(public status: number, message: string, public body?: any) { super(message); } }
 
-export async function api<T = any>(path: string, init: { method?: string; body?: unknown; raw?: boolean } = {}): Promise<T> {
-  const res = await fetch(`${API_URL}/v1${path}`, {
+async function fetchWithTimeout(url: string, opts: RequestInit, ms: number) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  try {
+    return await fetch(url, { ...opts, signal: ctrl.signal });
+  } catch (e: any) {
+    if (e?.name === 'AbortError') throw new ApiError(0, 'The server is taking too long to answer. It may be waking up — please try again in a moment.');
+    throw new ApiError(0, `Can't reach the server at ${API_URL}. Check your connection and try again.`);
+  } finally { clearTimeout(timer); }
+}
+
+/** Free hosting puts the API to sleep when idle; ping it so it is awake by the time the user signs in. */
+export async function wakeServer(ms = 90000): Promise<boolean> {
+  try { const r = await fetchWithTimeout(`${API_URL}/health`, {}, ms); return r.ok; } catch { return false; }
+}
+
+export async function api<T = any>(path: string, init: { method?: string; body?: unknown; raw?: boolean; timeoutMs?: number } = {}): Promise<T> {
+  const res = await fetchWithTimeout(`${API_URL}/v1${path}`, {
     method: init.method ?? (init.body !== undefined ? 'POST' : 'GET'),
     headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     body: init.body !== undefined ? JSON.stringify(init.body) : undefined,
-  });
+  }, init.timeoutMs ?? 45000);
   const text = await res.text();
   if (!res.ok) {
     let data: any = {}; try { data = JSON.parse(text); } catch {}
