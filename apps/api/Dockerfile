@@ -8,9 +8,10 @@ RUN npm run build -w apps/api
 
 FROM node:22-alpine
 WORKDIR /repo
-ENV NODE_ENV=production
+ENV NODE_ENV=production PORT=4000
 COPY --from=build /repo/node_modules ./node_modules
 COPY --from=build /repo/apps/api ./apps/api
 WORKDIR /repo/apps/api
 EXPOSE 4000
-CMD ["sh", "-c", "npx ts-node src/db/migrate.ts && node dist/main.js"]
+# Apply database migrations, add the demo data only if the database is empty, then start the API.
+CMD ["sh", "-c", "npx ts-node src/db/migrate.ts && SEED_IF_EMPTY=true npx ts-node src/db/seed.ts && node dist/main.js"]

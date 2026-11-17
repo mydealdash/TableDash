@@ -72,6 +72,12 @@ How it complies with Google's Places API policies:
 
 **Cost:** each diner search makes a billable Text Search request (rating and photo fields put it in Google's Enterprise tier), plus one Place Photo request per result photo shown. Each restaurant page view makes a billable Place Details request (rating and reviews are in Google's higher-priced tier), plus one Place Photo request per Google photo shown. Check Google's current pricing and set a budget alert in Google Cloud.
 
+## Host on AWS (production)
+
+TableDash runs on AWS Lightsail (API, back office, admin, PostgreSQL) plus S3 + CloudFront for the two mobile web apps,
+about $40/month. Setup is one click in GitHub Actions after you add an AWS key: see **[infra/aws/README.md](infra/aws/README.md)**.
+Every push to `main` then deploys automatically.
+
 ## Deploy a test environment (Render, free tier)
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/mydealdash/TableDash)

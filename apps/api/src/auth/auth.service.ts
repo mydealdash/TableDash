@@ -40,12 +40,16 @@ export class AuthService {
     return this.issue(user);
   }
 
-  /** DIN-01: phone OTP. In non-production the code is returned so apps can be tested without SMS. */
+  /**
+   * DIN-01: phone OTP. While testing (non-production, or SHOW_DEV_OTP=true) the code is returned so
+   * the apps work without an SMS provider. Turn SHOW_DEV_OTP off before real diners sign up.
+   */
   async requestOtp(phone: string) {
     const code = String(randomInt(100000, 1000000));
     await this.db.insert(otpCodes).values({ phone, code, expiresAt: new Date(Date.now() + 10 * 60000) });
     await this.messaging.send('SMS', phone, 'otp', `Your TableDash code is ${code}`);
-    return process.env.NODE_ENV === 'production' ? { sent: true } : { sent: true, devCode: code };
+    const showCode = process.env.NODE_ENV !== 'production' || process.env.SHOW_DEV_OTP === 'true';
+    return showCode ? { sent: true, devCode: code } : { sent: true };
   }
 
   async verifyOtp(input: { phone: string; code: string; firstName?: string; lastName?: string }) {

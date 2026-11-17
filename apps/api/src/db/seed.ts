@@ -8,6 +8,7 @@ import * as bcrypt from 'bcryptjs';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { sql } from 'drizzle-orm';
 import { Pool } from 'pg';
+import { pgConfig } from './pg-config';
 import * as s from './schema';
 
 type TableSpec = { name: string; min: number; max: number; type?: string; x: number; y: number; shape?: string; combine?: string[]; w?: number; h?: number };
@@ -55,7 +56,7 @@ const FLOOR: TableSpec[] = [
 ];
 
 async function main() {
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const pool = new Pool(pgConfig());
   const db = drizzle(pool, { schema: s });
   // SEED_IF_EMPTY=true (used on hosted demos): seed only on a fresh database.
   if (process.env.SEED_IF_EMPTY === 'true') {

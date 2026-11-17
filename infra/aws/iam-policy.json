@@ -1,0 +1,14 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    { "Sid": "WhoAmI", "Effect": "Allow", "Action": "sts:GetCallerIdentity", "Resource": "*" },
+    { "Sid": "Lightsail", "Effect": "Allow", "Action": "lightsail:*", "Resource": "*" },
+    { "Sid": "CloudFront", "Effect": "Allow", "Action": "cloudfront:*", "Resource": "*" },
+    { "Sid": "WebAppBuckets", "Effect": "Allow", "Action": "s3:*",
+      "Resource": ["arn:aws:s3:::tabledash-*", "arn:aws:s3:::tabledash-*/*"] },
+    { "Sid": "AppSecrets", "Effect": "Allow", "Action": ["ssm:GetParameter", "ssm:PutParameter"],
+      "Resource": "arn:aws:ssm:*:*:parameter/tabledash/*" },
+    { "Sid": "LightsailServiceRole", "Effect": "Allow", "Action": "iam:CreateServiceLinkedRole", "Resource": "*",
+      "Condition": { "StringLike": { "iam:AWSServiceName": "lightsail.amazonaws.com" } } }
+  ]
+}

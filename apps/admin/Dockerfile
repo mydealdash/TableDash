@@ -5,7 +5,8 @@ COPY apps/admin/package.json apps/admin/
 RUN npm ci --workspace apps/admin --include-workspace-root=false
 COPY apps/admin apps/admin
 ARG NEXT_PUBLIC_API_URL=http://localhost:4000
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL NEXT_TELEMETRY_DISABLED=1
+ARG NEXT_PUBLIC_RESTAURANT_APP_URL=http://localhost:3001
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL NEXT_PUBLIC_RESTAURANT_APP_URL=$NEXT_PUBLIC_RESTAURANT_APP_URL NEXT_TELEMETRY_DISABLED=1
 RUN npm run build -w apps/admin
 
 FROM node:22-alpine

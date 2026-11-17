@@ -1,0 +1,45 @@
+name: AWS setup
+
+# Click "Run workflow" once. It creates the AWS resources (database, servers, web hosting)
+# and then deploys TableDash to them. Safe to run again: it skips anything that already exists.
+on:
+  workflow_dispatch:
+    inputs:
+      region:
+        description: AWS region (us-east-1 = N. Virginia, eu-central-1 = Frankfurt)
+        default: us-east-1
+        required: true
+
+concurrency: aws-deploy
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      AWS_REGION: ${{ inputs.region }}
+      GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Check the AWS key is in GitHub
+        env: { KEY: "${{ secrets.AWS_ACCESS_KEY_ID }}" }
+        run: |
+          if [ -z "$KEY" ]; then
+            echo "::error::Add AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY under Settings > Secrets and variables > Actions (see infra/aws/README.md)."
+            exit 1
+          fi
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ inputs.region }}
+      - name: Install the Lightsail upload tool
+        run: |
+          sudo curl -sSfL https://s3.us-west-2.amazonaws.com/lightsailctl/latest/linux-amd64/lightsailctl -o /usr/local/bin/lightsailctl
+          sudo chmod +x /usr/local/bin/lightsailctl
+      - name: Create AWS resources
+        run: infra/aws/setup.sh
+      - name: Deploy TableDash
+        run: infra/aws/deploy.sh

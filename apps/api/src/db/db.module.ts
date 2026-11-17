@@ -2,6 +2,7 @@ import { Global, Module, OnModuleDestroy, Inject } from '@nestjs/common';
 import { drizzle, NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import * as schema from './schema';
+import { pgConfig } from './pg-config';
 
 export const DB = Symbol('DB');
 export const PG_POOL = Symbol('PG_POOL');
@@ -12,7 +13,7 @@ export type Tx = Parameters<Parameters<Db['transaction']>[0]>[0];
 @Global()
 @Module({
   providers: [
-    { provide: PG_POOL, useFactory: () => new Pool({ connectionString: process.env.DATABASE_URL, max: 20 }) },
+    { provide: PG_POOL, useFactory: () => new Pool(pgConfig({ max: 20 })) },
     { provide: DB, inject: [PG_POOL], useFactory: (pool: Pool) => drizzle(pool, { schema }) },
   ],
   exports: [DB, PG_POOL],

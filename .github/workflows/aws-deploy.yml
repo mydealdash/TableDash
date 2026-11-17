@@ -1,0 +1,58 @@
+name: Deploy to AWS
+
+# Runs on every push to main once AWS has been set up (the "AWS setup" workflow).
+# You can also run it by hand and choose which part to deploy.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      part:
+        description: What to deploy
+        type: choice
+        options: [all, api, web, mobile]
+        default: all
+
+concurrency: aws-deploy
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+      GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+      ONLY: ${{ inputs.part || 'all' }}
+      HAS_KEY: ${{ secrets.AWS_ACCESS_KEY_ID != '' }}
+    steps:
+      - name: Skip until AWS is connected
+        if: env.HAS_KEY != 'true'
+        run: echo "::notice::No AWS key in GitHub yet, so nothing was deployed to AWS. See infra/aws/README.md."
+      - uses: actions/checkout@v4
+        if: env.HAS_KEY == 'true'
+      - uses: actions/setup-node@v4
+        if: env.HAS_KEY == 'true'
+        with: { node-version: 22 }
+      - uses: aws-actions/configure-aws-credentials@v4
+        if: env.HAS_KEY == 'true'
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Check AWS has been set up
+        id: ready
+        if: env.HAS_KEY == 'true'
+        run: |
+          if aws lightsail get-container-services --service-name tabledash-api >/dev/null 2>&1; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::AWS isn't set up yet. Run the 'AWS setup' workflow first."
+          fi
+      - name: Install the Lightsail upload tool
+        if: steps.ready.outputs.ok == 'true'
+        run: |
+          sudo curl -sSfL https://s3.us-west-2.amazonaws.com/lightsailctl/latest/linux-amd64/lightsailctl -o /usr/local/bin/lightsailctl
+          sudo chmod +x /usr/local/bin/lightsailctl
+      - name: Deploy
+        if: steps.ready.outputs.ok == 'true'
+        run: infra/aws/deploy.sh
