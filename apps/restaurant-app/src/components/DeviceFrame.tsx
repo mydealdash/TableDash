@@ -32,23 +32,34 @@ function StatusBarMock() {
 
 export function DeviceFrame({ children, background = '#f4f2ee' }: { children: React.ReactNode; background?: string }) {
   const { width, height } = useWindowDimensions();
-  // No fake frame on real phones/tablets, or when installed to the home screen.
+  // Real phones/tablets, installed apps and native builds fill the screen as normal.
   const realDevice = Platform.OS === 'web' && typeof window !== 'undefined' &&
-    ((navigator as any).maxTouchPoints > 0 || window.matchMedia?.('(display-mode: standalone)').matches || (navigator as any).standalone === true);
-  if (Platform.OS !== 'web' || realDevice || width < DEVICE.min) return <>{children}</>;
-  const w = Math.min(DEVICE.w, width - 64);
-  const h = Math.min(DEVICE.h, height - 64);
+    ((navigator as any).maxTouchPoints > 0 || !!window.matchMedia?.('(pointer: coarse)').matches ||
+     !!window.matchMedia?.('(display-mode: standalone)').matches || (navigator as any).standalone === true);
+  if (Platform.OS !== 'web' || realDevice) return <>{children}</>;
+
+  // On a computer, always show the device. Tablets turn to portrait in tall windows; the whole
+  // device is scaled down to fit smaller windows instead of stretching into a web page.
+  const portrait = KIND === 'phone' || height > width;
+  const screenW = portrait ? Math.min(DEVICE.w, DEVICE.h) : Math.max(DEVICE.w, DEVICE.h);
+  const screenH = portrait ? Math.max(DEVICE.w, DEVICE.h) : Math.min(DEVICE.w, DEVICE.h);
+  const outerW = screenW + DEVICE.bezel * 2, outerH = screenH + DEVICE.bezel * 2;
+  const scale = Math.min(1, (width - 32) / outerW, (height - 56) / outerH);
+  if (scale < 0.3) return <>{children}</>; // window far too small to be useful as a device
+
   return (
-    <View style={{ flex: 1, minHeight: height, alignItems: 'center', justifyContent: 'center', backgroundColor: '#14213D' }}>
-      <View style={{ width: w + DEVICE.bezel * 2, height: h + DEVICE.bezel * 2, borderRadius: DEVICE.radius + DEVICE.bezel, backgroundColor: '#0b0b0c', padding: DEVICE.bezel,
-        ...({ boxShadow: '0 30px 80px rgba(0,0,0,.55), 0 0 0 2px #2A3858' } as any) }}>
-        <View style={{ flex: 1, borderRadius: DEVICE.radius, overflow: 'hidden', backgroundColor: background }}>
-          <StatusBarMock />
-          <View style={{ flex: 1 }}>{children}</View>
-          {KIND === 'phone' && <View style={{ height: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff' }}><View style={{ width: 134, height: 5, borderRadius: 3, backgroundColor: '#111' }} /></View>}
+    <View style={{ flex: 1, minHeight: height, alignItems: 'center', justifyContent: 'center', backgroundColor: '#14213D', overflow: 'hidden' }}>
+      <View style={{ width: outerW * scale, height: outerH * scale }}>
+        <View style={{ position: 'absolute', left: 0, top: 0, width: outerW, height: outerH, borderRadius: DEVICE.radius + DEVICE.bezel, backgroundColor: '#0b0b0c', padding: DEVICE.bezel,
+          ...({ transform: `scale(${scale})`, transformOrigin: '0 0', boxShadow: '0 30px 80px rgba(0,0,0,.55), 0 0 0 2px #2A3858' } as any) }}>
+          <View style={{ flex: 1, borderRadius: DEVICE.radius, overflow: 'hidden', backgroundColor: background }}>
+            <StatusBarMock />
+            <View style={{ flex: 1 }}>{children}</View>
+            {KIND === 'phone' && <View style={{ height: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff' }}><View style={{ width: 134, height: 5, borderRadius: 3, backgroundColor: '#111' }} /></View>}
+          </View>
         </View>
       </View>
-      <Text style={{ color: '#8D98B3', fontSize: 12, marginTop: 14 }}>{KIND === 'phone' ? 'TableDash diner app · web preview' : 'TableDash for Restaurants · iPad preview'}</Text>
+      <Text style={{ color: '#8D98B3', fontSize: 12, marginTop: 12 }}>{KIND === 'phone' ? 'TableDash diner app · web preview' : 'TableDash for Restaurants · iPad preview'}</Text>
     </View>
   );
 }
