@@ -33,9 +33,14 @@ function StatusBarMock() {
 export function DeviceFrame({ children, background = '#f4f2ee' }: { children: React.ReactNode; background?: string }) {
   const { width, height } = useWindowDimensions();
   // Real phones/tablets, installed apps and native builds fill the screen as normal.
-  const realDevice = Platform.OS === 'web' && typeof window !== 'undefined' &&
-    ((navigator as any).maxTouchPoints > 0 || !!window.matchMedia?.('(pointer: coarse)').matches ||
-     !!window.matchMedia?.('(display-mode: standalone)').matches || (navigator as any).standalone === true);
+  // Decide by the device type, not by touch support: many Windows laptops report touch too.
+  const realDevice = Platform.OS === 'web' && typeof window !== 'undefined' && (() => {
+    const ua = navigator.userAgent || '';
+    const phoneOrTablet = /iPhone|iPod|iPad|Android|Mobile|Silk|Kindle|Opera Mini|IEMobile/i.test(ua)
+      || (/Macintosh/.test(ua) && (navigator as any).maxTouchPoints > 1); // iPadOS reports itself as a Mac
+    const installed = !!window.matchMedia?.('(display-mode: standalone)').matches || (navigator as any).standalone === true;
+    return phoneOrTablet || installed;
+  })();
   if (Platform.OS !== 'web' || realDevice) return <>{children}</>;
 
   // On a computer, always show the device. Tablets turn to portrait in tall windows; the whole
