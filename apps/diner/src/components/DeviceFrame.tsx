@@ -32,7 +32,10 @@ function StatusBarMock() {
 
 export function DeviceFrame({ children, background = '#f4f2ee' }: { children: React.ReactNode; background?: string }) {
   const { width, height } = useWindowDimensions();
-  if (Platform.OS !== 'web' || width < DEVICE.min) return <>{children}</>;
+  // No fake frame on real phones/tablets, or when installed to the home screen.
+  const realDevice = Platform.OS === 'web' && typeof window !== 'undefined' &&
+    ((navigator as any).maxTouchPoints > 0 || window.matchMedia?.('(display-mode: standalone)').matches || (navigator as any).standalone === true);
+  if (Platform.OS !== 'web' || realDevice || width < DEVICE.min) return <>{children}</>;
   const w = Math.min(DEVICE.w, width - 64);
   const h = Math.min(DEVICE.h, height - 64);
   return (

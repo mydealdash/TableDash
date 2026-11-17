@@ -6,9 +6,9 @@
       "distribution": "internal",
       "android": { "buildType": "apk" },
       "ios": { "simulator": false },
-      "env": { "EXPO_PUBLIC_API_URL": "https://REPLACE-WITH-YOUR-API.onrender.com" }
+      "env": { "EXPO_PUBLIC_API_URL": "https://tabledash-api.onrender.com" }
     },
-    "production": { "env": { "EXPO_PUBLIC_API_URL": "https://REPLACE-WITH-YOUR-API.onrender.com" } }
+    "production": { "env": { "EXPO_PUBLIC_API_URL": "https://tabledash-api.onrender.com" } }
   },
   "submit": { "production": {} }
 }

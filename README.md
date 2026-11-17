@@ -12,6 +12,20 @@ Built from the *OpenTable & Resy — Functional Analysis and Functional Specific
 | Diner mobile app (iOS / Android) | `apps/diner` | Expo SDK 52, React Native 0.76 | — |
 | Restaurant mobile app (iPad / phone) | `apps/restaurant-app` | Expo SDK 52, React Native 0.76, react-native-svg | — |
 
+## Install the apps on your phone or iPad (no app store needed)
+
+Both mobile apps can be installed straight from their Render links. They get a home-screen icon and open full screen like a normal app.
+
+- **iPhone / iPad (Safari):** open the link → Share button → **Add to Home Screen**.
+- **Android (Chrome):** open the link → ⋮ menu → **Install app** (or **Add to Home screen**).
+
+| App | Link |
+|---|---|
+| Restaurant app (host stand, bookings) | https://tabledash-restaurant-app.onrender.com |
+| Diner app (search and book) | https://tabledash-diner.onrender.com |
+
+For real App Store / Google Play apps, see "Mobile apps (EAS)" — `eas.json` already points at https://tabledash-api.onrender.com.
+
 ## Mobile apps
 
 Both diner and restaurant experiences are native Expo apps for iOS and Android.
